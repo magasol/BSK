@@ -11,10 +11,12 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.logging.Level;
@@ -36,6 +38,7 @@ public class Encryption {
     protected String fullFileName;
     protected SecretKey keySecret;
     protected Cipher cipher;
+    protected String pswd;
 
     public Encryption(String fullFileName) {
         try {

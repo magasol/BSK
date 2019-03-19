@@ -28,6 +28,9 @@ import blowfishapp.files.EncryptionCBC;
 import blowfishapp.files.EncryptionCFB;
 import blowfishapp.files.EncryptionECB;
 import blowfishapp.files.EncryptionOFB;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import javafx.scene.control.PasswordField;
 
 /**
@@ -40,6 +43,7 @@ public class BlowFishApp extends Application {
     private final int ROW_HEIGHT = 25;
     private File file;
     private String chosenEncryptionType;
+    private byte[] pswdShortcut;
 
     @Override
     public void start(Stage primaryStage) {
@@ -70,9 +74,6 @@ public class BlowFishApp extends Application {
         Text pswdText = new Text("Hasło");
         PasswordField pswdField = new PasswordField();
 
-        //MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        //byte[] hash = digest.digest(text.getBytes(StandardCharsets.UTF_8));
-        
         Button encryptButton = new Button();
         encryptButton.setText("Encrypt");
         encryptButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -141,6 +142,17 @@ public class BlowFishApp extends Application {
             if (fileToEncrypt != null) {
                 fileToEncrypt.encryptFile();
             }
+        }
+    }
+
+    // do wywołania przy nawiązywaniu połączenia, na razie nigdzie nie wywoływane
+    void createPswdShortcut(String pswd) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            this.pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
+            System.out.println("Skrót hasła: " + new String(this.pswdShortcut));
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
