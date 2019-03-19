@@ -43,10 +43,10 @@ public class EncryptionCBC extends Encryption {
     public void encryptFile() throws IOException {
 
         System.out.println("szyfruj plik " + this.fullFileName + " w trybie CBC");
-        String fileText = this.readFile();
+        byte[] fileText = this.readFile();
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
-            byte[] cipherText = cipher.doFinal(fileText.getBytes("UTF8"));
+            byte[] cipherText = cipher.doFinal(fileText);
 
             byte[] ivBytes = cipher.getIV();
             if (ivBytes != null) {
@@ -58,8 +58,9 @@ public class EncryptionCBC extends Encryption {
 
             byte[] decryptedText = this.decryptText(cipherText);
 
-            System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            System.out.println("\n\nODSZYFROWANY TEKST:\n" + new String(decryptedText, "UTF8"));
+            //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
+            this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+            System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);

@@ -7,9 +7,13 @@ package blowfishapp.files;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -35,82 +39,65 @@ public class Encryption {
 
     public Encryption(String fullFileName) {
         try {
+            cipher = Cipher.getInstance("Blowfish");
             this.fullFileName = fullFileName;
             KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
             keyGenerator.init(128);
             keySecret = keyGenerator.generateKey();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public String readFile() throws FileNotFoundException, IOException {
-        FileReader fileReader = new FileReader(this.fullFileName);
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
-        String text, tmp;
+    public byte[] readFile() throws FileNotFoundException, IOException {
+        Path path = Paths.get(this.fullFileName);
+        return Files.readAllBytes(path);
+    }
 
+    public void writeFile(String path, byte[] text) throws FileNotFoundException {
         try {
-            text = bufferedReader.readLine();
-            do {
-                tmp = bufferedReader.readLine();
-                if (tmp != null) {
-                    text = text + "\n" + tmp;
-                }
-            } while (tmp != null);
-        } finally {
-            bufferedReader.close();
+            FileOutputStream outputStream =
+                    new FileOutputStream(path);
+            outputStream.write(text);
+            outputStream.close();  
+        } catch (IOException ex) {
+            Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("\n\nTresc wcztanego pliku:\n" + text);
-        return text;
-    }
 
-    public void writeFile(String path, String text) throws FileNotFoundException {
-        PrintWriter file = new PrintWriter(path);
-        file.println(text);
-        file.close();
     }
 
     public void encryptFile() throws IOException {
-        System.out.print("szyfruj plik");
-
-        String key = "Key";
-        String fileText = this.readFile();
-        SecretKey keySecret = new SecretKeySpec(key.getBytes(), "Blowfish");
-        Cipher cipher;
-
+        System.out.println("szyfruj plik " + this.fullFileName);
+        byte[] fileText = this.readFile();
         try {
-
-            cipher = Cipher.getInstance("Blowfish");
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
-            byte[] cipherText = cipher.doFinal(fileText.getBytes());
-            String encryptedText = Base64.getEncoder().encodeToString(cipherText);
+            byte[] cipherText = cipher.doFinal(fileText);
 
-            System.out.print("Plik zaszyfrowany metodą Blowfish");
+            byte[] decryptedText = this.decryptText(cipherText);
 
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+            //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
+            this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+            System.out.println("KONIEC");
+
         } catch (InvalidKeyException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalBlockSizeException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         } catch (BadPaddingException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
-    public String encrypted(String fileText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        String key = "Key";
-        SecretKey keySecret = new SecretKeySpec(key.getBytes(), "Blowfish");
-
-        Cipher cipher = Cipher.getInstance("Blowfish");
+    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         cipher.init(Cipher.DECRYPT_MODE, keySecret);
+        byte[] decryptedText = cipher.doFinal(encryptedText);
+        return decryptedText;
 
-        byte[] cipherText = cipher.doFinal(fileText.getBytes());
-        String encryptedText = Base64.getEncoder().encodeToString(cipherText);
-
-        return new String(encryptedText);
     }
 }
