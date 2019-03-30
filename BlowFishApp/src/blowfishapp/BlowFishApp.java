@@ -63,9 +63,10 @@ public class BlowFishApp extends Application {
 
         Text pswdText = new Text("Hasło");
         PasswordField pswdField = new PasswordField();
-
+        
+        //na razie tworzenie kluczy, później będą tworzone w momencie nawiązania połączenia
         Button pswdButton = new Button();
-        pswdButton.setText("Create RSA Keys");
+        pswdButton.setText("Create Keys");
         pswdButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -121,22 +122,22 @@ public class BlowFishApp extends Application {
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
-                    encryption = new EncryptionCBC(file.getPath());
+                    encryption = new EncryptionCBC(file.getPath(), this.keysGenerator);
                     break;
                 case "CFB":
-                    encryption = new EncryptionCFB(file.getPath());
+                    encryption = new EncryptionCFB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania cfb");
                     break;
                 case "ECB":
-                    encryption = new EncryptionECB(file.getPath());
+                    encryption = new EncryptionECB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania ecb");
                     break;
                 case "OFB":
-                    encryption = new EncryptionOFB(file.getPath());
+                    encryption = new EncryptionOFB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania ofb");
                     break;
                 default:
-                    encryption = new Encryption(file.getPath());
+                    encryption = new Encryption(file.getPath(), this.keysGenerator);
                     System.out.println("brak trybu szyfrowania");
             }
             if (encryption != null) {
@@ -146,7 +147,6 @@ public class BlowFishApp extends Application {
     }
 
     private void generateKeys(String pswd) {
-        this.keysGenerator = new KeysGenerator();
-        keysGenerator.createRSAKeys(pswd);
+        this.keysGenerator = new KeysGenerator(pswd);
     }
 }

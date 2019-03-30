@@ -5,6 +5,7 @@
  */
 package blowfishapp.encryptionModes;
 
+import blowfishapp.keys.KeysGenerator;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -27,8 +28,8 @@ public class EncryptionOFB extends Encryption {
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionOFB(String fullFileName) {
-        super(fullFileName);
+    public EncryptionOFB(String fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/OFB/ISO10126Padding");
 

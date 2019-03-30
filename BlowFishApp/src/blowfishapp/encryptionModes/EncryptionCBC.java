@@ -5,6 +5,7 @@
  */
 package blowfishapp.encryptionModes;
 
+import blowfishapp.keys.KeysGenerator;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -28,8 +29,8 @@ public class EncryptionCBC extends Encryption {
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionCBC(String fullFileName) {
-        super(fullFileName);
+    public EncryptionCBC(String fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/CBC/ISO10126Padding");
 

@@ -25,9 +25,15 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * @author Magdalena
  */
-public class KeysGenerator {
+public final class KeysGenerator {
 
     private byte[] pswdShortcut;
+    private SecretKey keySecret;
+
+    public KeysGenerator(String pswd) {
+        createRSAKeys(pswd);
+        createSessionKey();
+    }
 
     byte[] createPswdShortcut(String pswd) {
         try {
@@ -51,7 +57,7 @@ public class KeysGenerator {
             PublicKey publicKey = keypair.getPublic();
 
             SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(pswd);
-            EncryptionCBC encryption = new EncryptionCBC(null);
+            EncryptionCBC encryption = new EncryptionCBC(null, this);
             byte[] privateKeyBytes = encryption.encryptText(privateKey.getEncoded(), secretKeySpec);
             System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             System.out.println(new String(publicKey.getEncoded()));
@@ -65,14 +71,17 @@ public class KeysGenerator {
         return new SecretKeySpec(keyData, "Blowfish");
     }
 
-    public SecretKey generateSessionKey() {
+    public void createSessionKey() {
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
             keyGenerator.init(128, new SecureRandom());
-            return keyGenerator.generateKey();
+            this.keySecret = keyGenerator.generateKey();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
+    }
+
+    public SecretKey getKeySecret() {
+        return keySecret;
     }
 }
