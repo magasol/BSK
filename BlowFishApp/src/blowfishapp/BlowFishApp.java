@@ -35,8 +35,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Arrays;
 import javafx.scene.control.PasswordField;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
@@ -133,30 +133,30 @@ public class BlowFishApp extends Application {
 
     private void encrypt(String value) throws IOException {
         if (file != null) {
-            Encryption fileToEncrypt = null;
+            Encryption encryption = null;
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
-                    fileToEncrypt = new EncryptionCBC(file.getPath());
+                    encryption = new EncryptionCBC(file.getPath());
                     break;
                 case "CFB":
-                    fileToEncrypt = new EncryptionCFB(file.getPath());
+                    encryption = new EncryptionCFB(file.getPath());
                     System.out.println("tryb szyfrowania cfb");
                     break;
                 case "ECB":
-                    fileToEncrypt = new EncryptionECB(file.getPath());
+                    encryption = new EncryptionECB(file.getPath());
                     System.out.println("tryb szyfrowania ecb");
                     break;
                 case "OFB":
-                    fileToEncrypt = new EncryptionOFB(file.getPath());
+                    encryption = new EncryptionOFB(file.getPath());
                     System.out.println("tryb szyfrowania ofb");
                     break;
                 default:
-                    fileToEncrypt = new Encryption(file.getPath());
+                    encryption = new Encryption(file.getPath());
                     System.out.println("brak trybu szyfrowania");
             }
-            if (fileToEncrypt != null) {
-                fileToEncrypt.encryptFile();
+            if (encryption != null) {
+                encryption.encryptFile();
             }
         }
     }
@@ -182,8 +182,19 @@ public class BlowFishApp extends Application {
             KeyPair keypair = keyGen.genKeyPair();
             PrivateKey privateKey = keypair.getPrivate();
             PublicKey publicKey = keypair.getPublic();
+            
+            SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(pswd);
+            EncryptionCBC encryption = new EncryptionCBC(null);
+            byte[] privateKeyBytes = encryption.encryptText(privateKey.getEncoded(), secretKeySpec);
+            System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
+            System.out.println(new String(publicKey.getEncoded()));
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    SecretKeySpec createKeyForRSAPrivateKeyEncryption(String key) {
+        byte[] keyData = key.getBytes();
+        return new SecretKeySpec(keyData, "Blowfish");
     }
 }

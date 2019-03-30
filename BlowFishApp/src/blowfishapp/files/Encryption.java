@@ -46,7 +46,7 @@ public class Encryption {
             Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
     public byte[] readFile() throws FileNotFoundException, IOException {
         Path path = Paths.get(this.fullFileName);
         return Files.readAllBytes(path);
