@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package blowfishapp.files;
+package blowfishapp.encryptionModes;
 
+import blowfishapp.keys.KeysGenerator;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -15,6 +16,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -22,15 +24,15 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * @author Magdalena
  */
-public class EncryptionCFB extends Encryption {
+public class EncryptionCBC extends Encryption {
 
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionCFB(String fullFileName) {
-        super(fullFileName);
+    public EncryptionCBC(String fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
+            cipher = Cipher.getInstance("Blowfish/CBC/ISO10126Padding");
 
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
@@ -42,7 +44,7 @@ public class EncryptionCFB extends Encryption {
     @Override
     public void encryptFile() throws IOException {
 
-        System.out.println("szyfruj plik " + this.fullFileName + " w trybie CFB");
+        System.out.println("szyfruj plik " + this.fullFileName + " w trybie CBC");
         byte[] fileText = this.readFile();
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
@@ -59,7 +61,7 @@ public class EncryptionCFB extends Encryption {
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+            //this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {
@@ -75,6 +77,21 @@ public class EncryptionCFB extends Encryption {
         }
     }
 
+    public byte[] encryptText(byte[] text, SecretKey key) {
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return cipher.doFinal(text);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
     public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
             cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);

@@ -5,7 +5,6 @@
  */
 package blowfishapp;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -23,11 +22,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import blowfishapp.files.Encryption;
-import blowfishapp.files.EncryptionCBC;
-import blowfishapp.files.EncryptionCFB;
-import blowfishapp.files.EncryptionECB;
-import blowfishapp.files.EncryptionOFB;
+import blowfishapp.encryptionModes.*;
+import blowfishapp.keys.KeysGenerator;
 import javafx.scene.control.PasswordField;
 
 /**
@@ -36,10 +32,8 @@ import javafx.scene.control.PasswordField;
  */
 public class BlowFishApp extends Application {
 
-    private final Desktop desktop = Desktop.getDesktop();
-    private final int ROW_HEIGHT = 25;
     private File file;
-    private String chosenEncryptionType;
+    private KeysGenerator keysGenerator;
 
     @Override
     public void start(Stage primaryStage) {
@@ -69,10 +63,17 @@ public class BlowFishApp extends Application {
 
         Text pswdText = new Text("Hasło");
         PasswordField pswdField = new PasswordField();
-
-        //MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        //byte[] hash = digest.digest(text.getBytes(StandardCharsets.UTF_8));
         
+        //na razie tworzenie kluczy, później będą tworzone w momencie nawiązania połączenia
+        Button pswdButton = new Button();
+        pswdButton.setText("Create Keys");
+        pswdButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                generateKeys(pswdField.getText());
+            }
+        });
+
         Button encryptButton = new Button();
         encryptButton.setText("Encrypt");
         encryptButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -98,6 +99,7 @@ public class BlowFishApp extends Application {
         gridPane.add(fileNameText, 1, 1);
         gridPane.add(pswdText, 0, 2);
         gridPane.add(pswdField, 1, 2);
+        gridPane.add(pswdButton, 2, 2);
         gridPane.add(encryptButton, 0, 3);
 
         Scene scene = new Scene(gridPane, 400, 350);
@@ -116,31 +118,35 @@ public class BlowFishApp extends Application {
 
     private void encrypt(String value) throws IOException {
         if (file != null) {
-            Encryption fileToEncrypt = null;
+            Encryption encryption = null;
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
-                    fileToEncrypt = new EncryptionCBC(file.getPath());
+                    encryption = new EncryptionCBC(file.getPath(), this.keysGenerator);
                     break;
                 case "CFB":
-                    fileToEncrypt = new EncryptionCFB(file.getPath());
+                    encryption = new EncryptionCFB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania cfb");
                     break;
                 case "ECB":
-                    fileToEncrypt = new EncryptionECB(file.getPath());
+                    encryption = new EncryptionECB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania ecb");
                     break;
                 case "OFB":
-                    fileToEncrypt = new EncryptionOFB(file.getPath());
+                    encryption = new EncryptionOFB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania ofb");
                     break;
                 default:
-                    fileToEncrypt = new Encryption(file.getPath());
+                    encryption = new Encryption(file.getPath(), this.keysGenerator);
                     System.out.println("brak trybu szyfrowania");
             }
-            if (fileToEncrypt != null) {
-                fileToEncrypt.encryptFile();
+            if (encryption != null) {
+                encryption.encryptFile();
             }
         }
+    }
+
+    private void generateKeys(String pswd) {
+        this.keysGenerator = new KeysGenerator(pswd);
     }
 }

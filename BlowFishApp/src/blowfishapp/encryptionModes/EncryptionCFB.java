@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package blowfishapp.files;
+package blowfishapp.encryptionModes;
 
+import blowfishapp.keys.KeysGenerator;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -22,15 +23,15 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * @author Magdalena
  */
-public class EncryptionCBC extends Encryption {
+public class EncryptionCFB extends Encryption {
 
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionCBC(String fullFileName) {
-        super(fullFileName);
+    public EncryptionCFB(String fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish/CBC/ISO10126Padding");
+            cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
 
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
@@ -42,7 +43,7 @@ public class EncryptionCBC extends Encryption {
     @Override
     public void encryptFile() throws IOException {
 
-        System.out.println("szyfruj plik " + this.fullFileName + " w trybie CBC");
+        System.out.println("szyfruj plik " + this.fullFileName + " w trybie CFB");
         byte[] fileText = this.readFile();
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
@@ -59,7 +60,7 @@ public class EncryptionCBC extends Encryption {
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            //this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+            this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {

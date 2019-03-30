@@ -3,77 +3,59 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package blowfishapp.files;
+package blowfishapp.encryptionModes;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
+import blowfishapp.keys.KeysGenerator;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
  * @author Magdalena
  */
-public class Encryption {
+public class EncryptionOFB extends Encryption {
 
-    protected String fullFileName;
-    protected SecretKey keySecret;
-    protected Cipher cipher;
+    private IvParameterSpec iv;
+    private SecretKeySpec secretKeySpec;
 
-    public Encryption(String fullFileName) {
+    public EncryptionOFB(String fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish");
-            this.fullFileName = fullFileName;
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
-            keyGenerator.init(128);
-            keySecret = keyGenerator.generateKey();
+            cipher = Cipher.getInstance("Blowfish/OFB/ISO10126Padding");
+
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    public byte[] readFile() throws FileNotFoundException, IOException {
-        Path path = Paths.get(this.fullFileName);
-        return Files.readAllBytes(path);
-    }
-
-    public void writeFile(String path, byte[] text) throws FileNotFoundException {
-        try {
-            FileOutputStream outputStream =
-                    new FileOutputStream(path);
-            outputStream.write(text);
-            outputStream.close();  
-        } catch (IOException ex) {
-            Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
+    @Override
     public void encryptFile() throws IOException {
-        System.out.println("szyfruj plik " + this.fullFileName);
+
+        System.out.println("szyfruj plik " + this.fullFileName + " w trybie OFB");
         byte[] fileText = this.readFile();
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
+
+            byte[] ivBytes = cipher.getIV();
+            if (ivBytes != null) {
+                iv = new IvParameterSpec(ivBytes);
+            }
+
+            byte[] keyBytes = keySecret.getEncoded();
+            secretKeySpec = new SecretKeySpec(keyBytes, "Blowfish");
 
             byte[] decryptedText = this.decryptText(cipherText);
 
@@ -88,16 +70,20 @@ public class Encryption {
         } catch (BadPaddingException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        cipher.init(Cipher.DECRYPT_MODE, keySecret);
-        byte[] decryptedText = cipher.doFinal(encryptedText);
-        return decryptedText;
-
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);
+            byte[] decryptedText = cipher.doFinal(encryptedText);
+            return decryptedText;
+        } catch (InvalidAlgorithmParameterException ex) {
+            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }
