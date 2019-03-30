@@ -5,20 +5,14 @@
  */
 package blowfishapp.files;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -27,7 +21,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
@@ -61,10 +54,10 @@ public class Encryption {
 
     public void writeFile(String path, byte[] text) throws FileNotFoundException {
         try {
-            FileOutputStream outputStream =
-                    new FileOutputStream(path);
+            FileOutputStream outputStream
+                    = new FileOutputStream(path);
             outputStream.write(text);
-            outputStream.close();  
+            outputStream.close();
         } catch (IOException ex) {
             Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
         }

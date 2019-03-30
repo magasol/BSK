@@ -29,9 +29,15 @@ import blowfishapp.files.EncryptionCFB;
 import blowfishapp.files.EncryptionECB;
 import blowfishapp.files.EncryptionOFB;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import javafx.scene.control.PasswordField;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
@@ -74,6 +80,15 @@ public class BlowFishApp extends Application {
         Text pswdText = new Text("Hasło");
         PasswordField pswdField = new PasswordField();
 
+        Button pswdButton = new Button();
+        pswdButton.setText("Create RSA Keys");
+        pswdButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                createRSAKeys(pswdField.getText());
+            }
+        });
+
         Button encryptButton = new Button();
         encryptButton.setText("Encrypt");
         encryptButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -99,6 +114,7 @@ public class BlowFishApp extends Application {
         gridPane.add(fileNameText, 1, 1);
         gridPane.add(pswdText, 0, 2);
         gridPane.add(pswdField, 1, 2);
+        gridPane.add(pswdButton, 2, 2);
         gridPane.add(encryptButton, 0, 3);
 
         Scene scene = new Scene(gridPane, 400, 350);
@@ -146,11 +162,26 @@ public class BlowFishApp extends Application {
     }
 
     // do wywołania przy nawiązywaniu połączenia, na razie nigdzie nie wywoływane
-    void createPswdShortcut(String pswd) {
+    byte[] createPswdShortcut(String pswd) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             this.pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
             System.out.println("Skrót hasła: " + new String(this.pswdShortcut));
+            return this.pswdShortcut;
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    void createRSAKeys(String pswd) {
+        try {
+            String algorithm = "RSA"; // or RSA, DH, etc.
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance(algorithm);
+            keyGen.initialize(1024);
+            KeyPair keypair = keyGen.genKeyPair();
+            PrivateKey privateKey = keypair.getPrivate();
+            PublicKey publicKey = keypair.getPublic();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
