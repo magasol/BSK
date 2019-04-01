@@ -101,10 +101,10 @@ public class BlowFishApp extends Application {
                 
                 try {
                     //pamiętać o zmianie adresu serwera
-                    byte[] ipAddr = new byte[]{10, 0, 2, 15};
-                    InetAddress serverAddress = InetAddress.getByAddress(ipAddr);
+                    InetAddress serverAddress = InetAddress.getByName("0.0.0.0");
                     
-                    Client client = new Client(serverAddress,port); 
+                    //Client client = new Client(server.socket.getInetAddress(),port); 
+                    Client client = new Client(serverAddress, port);
                     client.send(new String(encryption.encryptedText, "UTF8"));
                     client.stop();
                     
@@ -135,6 +135,7 @@ public class BlowFishApp extends Application {
             public void handle(ActionEvent event) {
                 try {
                     server = new Server(port);
+                    System.out.println(server.getAddress());
                     
                 } catch (IOException ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);

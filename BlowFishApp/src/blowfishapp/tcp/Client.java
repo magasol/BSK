@@ -32,11 +32,11 @@ public class Client {
     public void send(String cipherText)
     {
         if (!socket.isConnected()) {
-            System.out.println("Aplikacja nie połączyła się z serwerem/n");
+            System.out.println("Aplikacja nie połączyła się z serwerem");
         }
         
         out.write(cipherText);
-        System.out.println("Aplikacja wysłała " + cipherText + "/n");
+        System.out.println("Aplikacja wysłała " + cipherText);
     }
     
     public void stop() throws IOException
@@ -44,7 +44,7 @@ public class Client {
         socket.close();
         in.close();
         out.close();
-        System.out.println("Klient został zamknięty./n");
+        System.out.println("Klient został zamknięty.");
     }
     
 }
