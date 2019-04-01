@@ -48,6 +48,7 @@ public class EncryptionCFB extends Encryption {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
+            this.encryptedText = cipherText;
 
             byte[] ivBytes = cipher.getIV();
             if (ivBytes != null) {
@@ -60,7 +61,7 @@ public class EncryptionCFB extends Encryption {
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+           // this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {

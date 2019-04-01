@@ -40,11 +40,12 @@ public class EncryptionECB extends Encryption {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
+            this.encryptedText = cipherText;
 
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+            //this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {

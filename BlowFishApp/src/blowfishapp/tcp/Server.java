@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package blowfish.tcp;
+package blowfishapp.tcp;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,16 +15,17 @@ import java.net.Socket;
  *
  * @author Aleksandra
  */
-public class server {
+public class Server {
     
     ServerSocket socket;
     
-    public server(int port) throws IOException
+    public Server(int port) throws IOException
     {
         this.socket = new ServerSocket(port);
+        System.out.println("Serwer został stworzony./n");
     }
     
-    public String listen(int port) throws IOException
+    public String listen() throws IOException
     {
         String encryptedFile = null;
         
@@ -37,7 +38,8 @@ public class server {
         while ( (input = in.readLine()) != null ) {
             encryptedFile = encryptedFile + "/n" + input;
         }
-               
+         
+        System.out.println("Serwer odebrł: " + encryptedFile + "/n");
         clientSocket.close();
         in.close();
         
@@ -47,5 +49,6 @@ public class server {
     public void stop() throws IOException
     {
         socket.close();
+        System.out.println("Serwer został zamknięty./n");
     }
 }
