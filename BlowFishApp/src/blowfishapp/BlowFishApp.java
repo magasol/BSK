@@ -25,6 +25,7 @@ import javafx.stage.Stage;
 import blowfishapp.encryptionModes.*;
 import blowfishapp.keys.KeysGenerator;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 
 /**
  *
@@ -39,8 +40,8 @@ public class BlowFishApp extends Application {
     public void start(Stage primaryStage) {
 
         Text encryptionTypeText = new Text("Tryb szyfrowania");
-        Text fileNameText = new Text("Nazwa pliku");
-
+        Text inputFileNameText = new Text("Nazwa pliku");
+                        
         ObservableList<String> names = FXCollections.observableArrayList(
                 "ECB", "CBC", "CFB", "OFB", "NONE");
         ChoiceBox<String> encryptionChoiceBox = new ChoiceBox<>(names);
@@ -49,18 +50,19 @@ public class BlowFishApp extends Application {
 
         final Button chooseFileButton = new Button("Wybierz plik");
 
-        chooseFileButton.setOnAction(
-                new EventHandler<ActionEvent>() {
+        chooseFileButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(final ActionEvent e) {
                 File f = fileChooser.showOpenDialog(primaryStage);
                 if (f != null) {
                     file = f;
-                    fileNameText.setText(f.getName());
+                    inputFileNameText.setText(f.getName());
                 }
             }
         });
-
+        Text outputFileNameText = new Text("Plik wyjściowy");
+        TextField outputFileNameTextField = new TextField("Nazwa");
+        
         Text pswdText = new Text("Hasło");
         PasswordField pswdField = new PasswordField();
         
@@ -80,7 +82,7 @@ public class BlowFishApp extends Application {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                    encrypt(encryptionChoiceBox.getValue());
+                    encrypt(encryptionChoiceBox.getValue(),outputFileNameTextField.getText());
                 } catch (IOException ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -96,11 +98,13 @@ public class BlowFishApp extends Application {
         gridPane.add(encryptionTypeText, 0, 0);
         gridPane.add(encryptionChoiceBox, 1, 0);
         gridPane.add(chooseFileButton, 0, 1);
-        gridPane.add(fileNameText, 1, 1);
-        gridPane.add(pswdText, 0, 2);
-        gridPane.add(pswdField, 1, 2);
-        gridPane.add(pswdButton, 2, 2);
-        gridPane.add(encryptButton, 0, 3);
+        gridPane.add(inputFileNameText, 1, 1);
+        gridPane.add(outputFileNameText, 0, 2);
+        gridPane.add(outputFileNameTextField, 1, 2);
+        gridPane.add(pswdText, 0, 3);
+        gridPane.add(pswdField, 1, 3);
+        gridPane.add(pswdButton, 2, 3);
+        gridPane.add(encryptButton, 0, 4);
 
         Scene scene = new Scene(gridPane, 400, 350);
 
@@ -116,28 +120,28 @@ public class BlowFishApp extends Application {
         launch(args);
     }
 
-    private void encrypt(String value) throws IOException {
+    private void encrypt(String value, String outputFileName) throws IOException {
         if (file != null) {
             Encryption encryption = null;
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
-                    encryption = new EncryptionCBC(file.getPath(), this.keysGenerator);
+                    encryption = new EncryptionCBC(file.getPath(), outputFileName, this.keysGenerator);
                     break;
                 case "CFB":
-                    encryption = new EncryptionCFB(file.getPath(), this.keysGenerator);
+                    encryption = new EncryptionCFB(file.getPath(), outputFileName, this.keysGenerator);
                     System.out.println("tryb szyfrowania cfb");
                     break;
                 case "ECB":
-                    encryption = new EncryptionECB(file.getPath(), this.keysGenerator);
+                    encryption = new EncryptionECB(file.getPath(), outputFileName, this.keysGenerator);
                     System.out.println("tryb szyfrowania ecb");
                     break;
                 case "OFB":
-                    encryption = new EncryptionOFB(file.getPath(), this.keysGenerator);
+                    encryption = new EncryptionOFB(file.getPath(), outputFileName, this.keysGenerator);
                     System.out.println("tryb szyfrowania ofb");
                     break;
                 default:
-                    encryption = new Encryption(file.getPath(), this.keysGenerator);
+                    encryption = new Encryption(file.getPath(), outputFileName, this.keysGenerator);
                     System.out.println("brak trybu szyfrowania");
             }
             if (encryption != null) {

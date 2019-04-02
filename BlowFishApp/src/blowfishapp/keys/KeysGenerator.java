@@ -57,7 +57,7 @@ public final class KeysGenerator {
             PublicKey publicKey = keypair.getPublic();
 
             SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(pswd);
-            EncryptionCBC encryption = new EncryptionCBC(null, this);
+            EncryptionCBC encryption = new EncryptionCBC(null,null,this);
             byte[] privateKeyBytes = encryption.encryptText(privateKey.getEncoded(), secretKeySpec);
             System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             System.out.println(new String(publicKey.getEncoded()));

@@ -29,8 +29,8 @@ public class EncryptionCBC extends Encryption {
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionCBC(String fullFileName, KeysGenerator keysGenerator) {
-        super(fullFileName, keysGenerator);
+    public EncryptionCBC(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, outputFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/CBC/ISO10126Padding");
 
@@ -50,6 +50,8 @@ public class EncryptionCBC extends Encryption {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
 
+            this.writeFile("E:\\semestr 6\\bsk\\encrypted", cipherText);
+            
             byte[] ivBytes = cipher.getIV();
             if (ivBytes != null) {
                 iv = new IvParameterSpec(ivBytes);
@@ -61,7 +63,7 @@ public class EncryptionCBC extends Encryption {
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            //this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+            this.writeFile("E:\\semestr 6\\bsk\\decrypted", decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {

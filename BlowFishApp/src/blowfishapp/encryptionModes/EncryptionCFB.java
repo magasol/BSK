@@ -28,8 +28,8 @@ public class EncryptionCFB extends Encryption {
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionCFB(String fullFileName, KeysGenerator keysGenerator) {
-        super(fullFileName, keysGenerator);
+    public EncryptionCFB(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, outputFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
 
@@ -48,6 +48,8 @@ public class EncryptionCFB extends Encryption {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
+            
+            this.writeFile("E:\\semestr 6\\bsk\\encrypted", cipherText);
 
             byte[] ivBytes = cipher.getIV();
             if (ivBytes != null) {
@@ -60,7 +62,7 @@ public class EncryptionCFB extends Encryption {
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+            this.writeFile("E:\\semestr 6\\bsk\\decrypted", decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {

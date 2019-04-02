@@ -29,14 +29,16 @@ import javax.crypto.SecretKey;
 public class Encryption {
 
     protected String fullFileName;
+    protected String outputFileName;
     protected SecretKey keySecret;
     protected Cipher cipher;
     protected String pswd;
 
-    public Encryption(String fullFileName, KeysGenerator keysGenerator) {
+    public Encryption(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         try {
             cipher = Cipher.getInstance("Blowfish");
             this.fullFileName = fullFileName;
+            this.outputFileName = outputFileName;
             keySecret = keysGenerator.getKeySecret();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
@@ -53,7 +55,7 @@ public class Encryption {
     public void writeFile(String path, byte[] text) throws FileNotFoundException {
         try {
             FileOutputStream outputStream
-                    = new FileOutputStream(path);
+                    = new FileOutputStream(path+"\\"+outputFileName);
             outputStream.write(text);
             outputStream.close();
         } catch (IOException ex) {
@@ -68,11 +70,13 @@ public class Encryption {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
+            
+            this.writeFile("E:\\semestr 6\\bsk\\encrypted", cipherText);
 
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            this.writeFile("E:\\semestr 6\\test_kot.jpg", decryptedText);
+            this.writeFile("E:\\semestr 6\\bsk\\decrypted", decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {
