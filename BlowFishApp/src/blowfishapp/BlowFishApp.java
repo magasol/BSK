@@ -168,16 +168,17 @@ public class BlowFishApp extends Application {
         gridPane.add(encryptionChoiceBox, 1, 0);
         gridPane.add(chooseFileButton, 0, 1);
         gridPane.add(inputFileNameText, 1, 1);
-        gridPane.add(pswdText, 0, 2);
-        gridPane.add(pswdField, 1, 2);
-        gridPane.add(pswdButton, 2, 2);
-        gridPane.add(encryptButton, 0, 3);
-        gridPane.add(sendButton, 0, 4);
-        gridPane.add(startServerButton, 0, 5);
-        gridPane.add(receiveButton, 0, 6);
-        gridPane.add(stopServerButton, 0, 7);
-        gridPane.add(outputFileNameText, 0, 8);
-        gridPane.add(outputFileNameTextField, 1, 8);
+        gridPane.add(outputFileNameText, 0, 2);
+        gridPane.add(outputFileNameTextField, 1, 2);
+        gridPane.add(pswdText, 0, 3);
+        gridPane.add(pswdField, 1, 3);
+        gridPane.add(pswdButton, 2, 3);
+        gridPane.add(encryptButton, 0, 4);
+        gridPane.add(sendButton, 0, 5);
+        gridPane.add(startServerButton, 0, 6);
+        gridPane.add(receiveButton, 0, 7);
+        gridPane.add(stopServerButton, 0, 8);
+
 
         Scene scene = new Scene(gridPane, 400, 350);
 

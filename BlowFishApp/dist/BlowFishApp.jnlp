@@ -8,11 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-<<<<<<< HEAD
-    <jar href="BlowFishApp.jar" size="20675" download="eager" />
-=======
-    <jar href="BlowFishApp.jar" size="26873" download="eager" />
->>>>>>> babfc807cc28aa6d1fb0056024884f6722680f02
+    <jar href="BlowFishApp.jar" size="27511" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="BlowFishApp" >
     <param name="requiredFXVersion" value="8.0+"/>
