@@ -4,6 +4,11 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/E:/semestr%206/bsk/BlowFish/BlowFishApp/src/blowfishapp/BlowFishApp.java</file>
+            <file>file:/E:/semestr%206/bsk/BlowFish/BlowFishApp/src/blowfishapp/encryptionModes/EncryptionOFB.java</file>
+            <file>file:/E:/semestr%206/bsk/BlowFish/BlowFishApp/src/blowfishapp/encryptionModes/Encryption.java</file>
+            <file>file:/E:/semestr%206/bsk/BlowFish/BlowFishApp/src/blowfishapp/encryptionModes/EncryptionCFB.java</file>
+            <file>file:/E:/semestr%206/bsk/BlowFish/BlowFishApp/src/blowfishapp/encryptionModes/EncryptionECB.java</file>
+            <file>file:/E:/semestr%206/bsk/BlowFish/BlowFishApp/src/blowfishapp/encryptionModes/EncryptionCBC.java</file>
         </group>
     </open-files>
 </project-private>

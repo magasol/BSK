@@ -30,6 +30,8 @@ public class Encryption {
 
     protected String fullFileName;
     protected String outputFileName;
+    final protected String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
+    final protected String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
     protected SecretKey keySecret;
     protected Cipher cipher;
     protected String pswd;
@@ -72,12 +74,12 @@ public class Encryption {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
-            this.writeFile("E:\\semestr 6\\bsk\\encrypted", cipherText);
+            this.writeFile(outputPathEncrypted, cipherText);
 
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            this.writeFile("E:\\semestr 6\\bsk\\decrypted", decryptedText);
+            this.writeFile(this.outputPathDecrypted, decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {

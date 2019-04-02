@@ -50,7 +50,7 @@ public class EncryptionOFB extends Encryption {
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
             
-            this.writeFile("E:\\semestr 6\\bsk\\encrypted", cipherText);
+            this.writeFile(this.outputPathEncrypted, cipherText);
 
             byte[] ivBytes = cipher.getIV();
             if (ivBytes != null) {
@@ -63,7 +63,7 @@ public class EncryptionOFB extends Encryption {
             byte[] decryptedText = this.decryptText(cipherText);
 
             //System.out.println("\n\nZASZYFROWANY TEKST:\n" + new String(cipherText, "UTF8"));
-            this.writeFile("E:\\semestr 6\\bsk\\decrypted", decryptedText);
+            this.writeFile(this.outputPathDecrypted, decryptedText);
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {
