@@ -33,6 +33,7 @@ public class Encryption {
     protected SecretKey keySecret;
     protected Cipher cipher;
     protected String pswd;
+    public byte[] encryptedText;
 
     public Encryption(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         try {
@@ -55,7 +56,7 @@ public class Encryption {
     public void writeFile(String path, byte[] text) throws FileNotFoundException {
         try {
             FileOutputStream outputStream
-                    = new FileOutputStream(path+"\\"+outputFileName);
+                    = new FileOutputStream(path + "\\" + outputFileName);
             outputStream.write(text);
             outputStream.close();
         } catch (IOException ex) {
@@ -70,7 +71,7 @@ public class Encryption {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
-            
+            this.encryptedText = cipherText;
             this.writeFile("E:\\semestr 6\\bsk\\encrypted", cipherText);
 
             byte[] decryptedText = this.decryptText(cipherText);

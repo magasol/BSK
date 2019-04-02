@@ -48,7 +48,8 @@ public class EncryptionCFB extends Encryption {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
-            
+            this.encryptedText = cipherText;
+
             this.writeFile("E:\\semestr 6\\bsk\\encrypted", cipherText);
 
             byte[] ivBytes = cipher.getIV();

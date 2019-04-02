@@ -26,6 +26,8 @@ import blowfishapp.encryptionModes.*;
 import blowfishapp.keys.KeysGenerator;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import blowfishapp.tcp.*;
+import java.net.InetAddress;
 
 /**
  *
@@ -35,13 +37,16 @@ public class BlowFishApp extends Application {
 
     private File file;
     private KeysGenerator keysGenerator;
+    Encryption encryption = null;
+    int port = 9999;
+    Server server;
 
     @Override
     public void start(Stage primaryStage) {
 
         Text encryptionTypeText = new Text("Tryb szyfrowania");
         Text inputFileNameText = new Text("Nazwa pliku");
-                        
+
         ObservableList<String> names = FXCollections.observableArrayList(
                 "ECB", "CBC", "CFB", "OFB", "NONE");
         ChoiceBox<String> encryptionChoiceBox = new ChoiceBox<>(names);
@@ -62,10 +67,10 @@ public class BlowFishApp extends Application {
         });
         Text outputFileNameText = new Text("Plik wyjściowy");
         TextField outputFileNameTextField = new TextField("Nazwa");
-        
+
         Text pswdText = new Text("Hasło");
         PasswordField pswdField = new PasswordField();
-        
+
         //na razie tworzenie kluczy, później będą tworzone w momencie nawiązania połączenia
         Button pswdButton = new Button();
         pswdButton.setText("Create Keys");
@@ -82,7 +87,71 @@ public class BlowFishApp extends Application {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                    encrypt(encryptionChoiceBox.getValue(),outputFileNameTextField.getText());
+                    encrypt(encryptionChoiceBox.getValue(), outputFileNameTextField.getText());
+                } catch (IOException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
+        Button sendButton = new Button();
+        sendButton.setText("Send");
+        sendButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+                try {
+                    //pamiętać o zmianie adresu serwera
+                    InetAddress serverAddress = InetAddress.getByName("0.0.0.0");
+
+                    //Client client = new Client(server.socket.getInetAddress(),port); 
+                    Client client = new Client(serverAddress, port);
+                    client.send(new String(encryption.encryptedText, "UTF8"));
+                    client.stop();
+
+                } catch (Exception ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
+        Button receiveButton = new Button();
+        receiveButton.setText("Receive");
+        receiveButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    server.listen();
+
+                } catch (IOException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
+        Button startServerButton = new Button();
+        startServerButton.setText("Start server");
+        startServerButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    server = new Server(port);
+                    System.out.println(server.getAddress());
+
+                } catch (IOException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
+        Button stopServerButton = new Button();
+        stopServerButton.setText("Stop server");
+        stopServerButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    server.stop();
+
                 } catch (IOException ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -99,12 +168,16 @@ public class BlowFishApp extends Application {
         gridPane.add(encryptionChoiceBox, 1, 0);
         gridPane.add(chooseFileButton, 0, 1);
         gridPane.add(inputFileNameText, 1, 1);
-        gridPane.add(outputFileNameText, 0, 2);
-        gridPane.add(outputFileNameTextField, 1, 2);
-        gridPane.add(pswdText, 0, 3);
-        gridPane.add(pswdField, 1, 3);
-        gridPane.add(pswdButton, 2, 3);
-        gridPane.add(encryptButton, 0, 4);
+        gridPane.add(pswdText, 0, 2);
+        gridPane.add(pswdField, 1, 2);
+        gridPane.add(pswdButton, 2, 2);
+        gridPane.add(encryptButton, 0, 3);
+        gridPane.add(sendButton, 0, 4);
+        gridPane.add(startServerButton, 0, 5);
+        gridPane.add(receiveButton, 0, 6);
+        gridPane.add(stopServerButton, 0, 7);
+        gridPane.add(outputFileNameText, 0, 8);
+        gridPane.add(outputFileNameTextField, 1, 8);
 
         Scene scene = new Scene(gridPane, 400, 350);
 
@@ -122,7 +195,6 @@ public class BlowFishApp extends Application {
 
     private void encrypt(String value, String outputFileName) throws IOException {
         if (file != null) {
-            Encryption encryption = null;
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
