@@ -6,45 +6,51 @@
 package blowfishapp.tcp;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Aleksandra
  */
 public class Client {
-    
+
     Socket socket;
-    private PrintWriter out;
+    private DataOutputStream out;
     private BufferedReader in;
-    
-    public Client(InetAddress serverAddress, int serverPort) throws Exception{
+
+    public Client(InetAddress serverAddress, int serverPort) throws Exception {
         this.socket = new Socket(serverAddress, serverPort);
-        this.out = new PrintWriter(socket.getOutputStream(), true);
+        //this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.out = new DataOutputStream(socket.getOutputStream());
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         System.out.println("Klient został stworzony.");
     }
-    
-    public void send(String cipherText)
-    {
-        if (!socket.isConnected()) {
-            System.out.println("Aplikacja nie połączyła się z serwerem");
+
+    public void send(String cipherText) {
+        try {
+            if (!socket.isConnected()) {
+                System.out.println("Aplikacja nie połączyła się z serwerem");
+            }
+
+            //out.write(cipherText);
+            this.out.writeBytes(cipherText);
+            System.out.println("Aplikacja wysłała " + cipherText);
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        out.write(cipherText);
-        System.out.println("Aplikacja wysłała " + cipherText);
     }
-    
-    public void stop() throws IOException
-    {
+
+    public void stop() throws IOException {
         socket.close();
         in.close();
         out.close();
         System.out.println("Klient został zamknięty.");
     }
-    
+
 }
