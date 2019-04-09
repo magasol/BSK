@@ -6,7 +6,7 @@
 package blowfishapp.keys;
 
 import blowfishapp.BlowFishApp;
-import blowfishapp.encryptionModes.EncryptionCBC;
+import blowfishapp.decryptionModes.DecryptionCBC;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -57,7 +57,7 @@ public final class KeysGenerator {
             PublicKey publicKey = keypair.getPublic();
 
             SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(pswd);
-            EncryptionCBC encryption = new EncryptionCBC(null,null,this);
+            DecryptionCBC encryption = new DecryptionCBC(null,null,this);
             byte[] privateKeyBytes = encryption.encryptText(privateKey.getEncoded(), secretKeySpec);
             System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             System.out.println(new String(publicKey.getEncoded()));

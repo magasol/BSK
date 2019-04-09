@@ -9,6 +9,9 @@ import blowfishapp.keys.KeysGenerator;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -25,18 +28,18 @@ import javax.crypto.SecretKey;
  */
 public class Encryption {
 
+    protected String fullFileName;
     protected String outputFileName;
-    final protected String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    final protected String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    final protected String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
     protected SecretKey keySecret;
     protected Cipher cipher;
     protected String pswd;
     public byte[] encryptedText;
 
-    public Encryption(byte[] encryptedText, String outputFileName, KeysGenerator keysGenerator) {
+    public Encryption(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         try {
-            this.encryptedText = encryptedText;
             cipher = Cipher.getInstance("Blowfish");
+            this.fullFileName = fullFileName;
             this.outputFileName = outputFileName;
             keySecret = keysGenerator.getKeySecret();
         } catch (NoSuchAlgorithmException ex) {
@@ -44,6 +47,11 @@ public class Encryption {
         } catch (NoSuchPaddingException ex) {
             Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    public byte[] readFile() throws FileNotFoundException, IOException {
+        Path path = Paths.get(this.fullFileName);
+        return Files.readAllBytes(path);
     }
 
     public void writeFile(String path, byte[] text) throws FileNotFoundException {
@@ -57,10 +65,23 @@ public class Encryption {
         }
     }
 
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        cipher.init(Cipher.DECRYPT_MODE, keySecret);
-        byte[] decryptedText = cipher.doFinal(encryptedText);
-        return decryptedText;
+    public void encryptFile() throws IOException {
+        System.out.println("szyfruj plik " + this.fullFileName);
+        byte[] fileText = this.readFile();
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, keySecret);
+            byte[] cipherText = cipher.doFinal(fileText);
+            this.encryptedText = cipherText;
+            this.writeFile(outputPathEncrypted, cipherText);
 
+            System.out.println("KONIEC");
+
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

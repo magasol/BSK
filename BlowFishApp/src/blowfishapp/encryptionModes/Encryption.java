@@ -30,8 +30,10 @@ public class Encryption {
 
     protected String fullFileName;
     protected String outputFileName;
-    final protected String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    final protected String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
+//    final protected String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
+//    final protected String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    final protected String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
+    final protected String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
     protected SecretKey keySecret;
     protected Cipher cipher;
     protected String pswd;

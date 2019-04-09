@@ -6,6 +6,7 @@
 package blowfishapp.encryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -21,14 +22,36 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class EncryptionECB extends Encryption {
 
-    public EncryptionECB(byte[] encryptedText, String outputFileName, KeysGenerator keysGenerator) {
-        super(encryptedText, outputFileName, keysGenerator);
+    public EncryptionECB(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, outputFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/ECB/ISO10126Padding");
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void encryptFile() throws IOException {
+        System.out.println("szyfruj plik " + this.fullFileName + " w trybie ECB");
+        byte[] fileText = this.readFile();
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, keySecret);
+            byte[] cipherText = cipher.doFinal(fileText);
+            this.encryptedText = cipherText;
+
+            this.writeFile(this.outputPathEncrypted, cipherText);
+
+            System.out.println("KONIEC");
+
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

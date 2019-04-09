@@ -6,6 +6,7 @@
 package blowfishapp.encryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +29,7 @@ public class EncryptionCBC extends Encryption {
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionCBC(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
+    public EncryptionCBC(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         super(fullFileName, outputFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/CBC/ISO10126Padding");
@@ -37,6 +38,37 @@ public class EncryptionCBC extends Encryption {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void encryptFile() throws IOException {
+
+        System.out.println("szyfruj plik " + this.fullFileName + " w trybie CBC");
+        byte[] fileText = this.readFile();
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, keySecret);
+            byte[] cipherText = cipher.doFinal(fileText);
+            this.encryptedText = cipherText;
+
+            this.writeFile(this.outputPathEncrypted, cipherText);
+
+            byte[] ivBytes = cipher.getIV();
+            if (ivBytes != null) {
+                iv = new IvParameterSpec(ivBytes);
+            }
+
+            byte[] keyBytes = keySecret.getEncoded();
+            secretKeySpec = new SecretKeySpec(keyBytes, "Blowfish");
+
+            System.out.println("KONIEC");
+
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -50,18 +82,6 @@ public class EncryptionCBC extends Encryption {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         } catch (BadPaddingException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        try {
-            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);
-            byte[] decryptedText = cipher.doFinal(encryptedText);
-            return decryptedText;
-        } catch (InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }

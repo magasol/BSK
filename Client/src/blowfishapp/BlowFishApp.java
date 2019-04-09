@@ -5,6 +5,7 @@
  */
 package blowfishapp;
 
+import blowfishapp.decryptionModes.Decryption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -16,7 +17,6 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import blowfishapp.encryptionModes.*;
 import blowfishapp.keys.KeysGenerator;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -30,7 +30,7 @@ import java.net.InetAddress;
 public class BlowFishApp extends Application {
 
     private KeysGenerator keysGenerator;
-    Encryption encryption = null;
+    Decryption encryption = null;
     String address = "127.0.0.3";
     int port = 9999;
 
@@ -61,11 +61,28 @@ public class BlowFishApp extends Application {
                 try {
                     //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
-
                     Client client = new Client(serverAddress, port);
-                    client.send("cos".getBytes());
+                    client.send("test".getBytes());
+                    client.stop();
+
+                } catch (Exception ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+
+        Button receiveButton = new Button();
+        receiveButton.setText("Receive");
+        receiveButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+                try {
+                    //pamiętać o zmianie adresu serwera
+                    InetAddress serverAddress = InetAddress.getByName(address);
+                    Client client = new Client(serverAddress, port);
                     byte[] receivedText = client.receive();
-                    client.decrypt("CBC", receivedText,outputFileNameTextField.getText(),keysGenerator);  //ODEBRANE OD SERWERA 
+                    client.decrypt("ECB", receivedText, outputFileNameTextField.getText(), keysGenerator);  //ODEBRANE OD SERWERA 
                     client.stop();
 
                 } catch (Exception ex) {
@@ -85,6 +102,7 @@ public class BlowFishApp extends Application {
         gridPane.add(pswdField, 1, 3);
         gridPane.add(pswdButton, 2, 3);
         gridPane.add(sendButton, 0, 5);
+        gridPane.add(receiveButton, 1, 5);
 
         Scene scene = new Scene(gridPane, 400, 350);
 

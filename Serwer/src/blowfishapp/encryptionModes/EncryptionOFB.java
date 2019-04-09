@@ -6,6 +6,7 @@
 package blowfishapp.encryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -22,20 +23,51 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * @author Magdalena
  */
-public class EncryptionCFB extends Encryption {
+public class EncryptionOFB extends Encryption {
 
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionCFB(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
+    public EncryptionOFB(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         super(fullFileName, outputFileName, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
+            cipher = Cipher.getInstance("Blowfish/OFB/ISO10126Padding");
 
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void encryptFile() throws IOException {
+
+        System.out.println("szyfruj plik " + this.fullFileName + " w trybie OFB");
+        byte[] fileText = this.readFile();
+        try {
+            cipher.init(Cipher.ENCRYPT_MODE, keySecret);
+            byte[] cipherText = cipher.doFinal(fileText);
+            this.encryptedText = cipherText;
+            
+            this.writeFile(this.outputPathEncrypted, cipherText);
+
+            byte[] ivBytes = cipher.getIV();
+            if (ivBytes != null) {
+                iv = new IvParameterSpec(ivBytes);
+            }
+
+            byte[] keyBytes = keySecret.getEncoded();
+            secretKeySpec = new SecretKeySpec(keyBytes, "Blowfish");
+            
+            System.out.println("KONIEC");
+
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

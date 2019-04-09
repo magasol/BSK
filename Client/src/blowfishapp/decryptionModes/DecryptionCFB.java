@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package blowfishapp.encryptionModes;
+package blowfishapp.decryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
 import java.security.InvalidAlgorithmParameterException;
@@ -22,20 +22,20 @@ import javax.crypto.spec.SecretKeySpec;
  *
  * @author Magdalena
  */
-public class EncryptionOFB extends Encryption {
+public class DecryptionCFB extends Decryption {
 
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionOFB(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
+    public DecryptionCFB(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         super(fullFileName, outputFileName, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish/OFB/ISO10126Padding");
+            cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
 
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -45,7 +45,7 @@ public class EncryptionOFB extends Encryption {
             byte[] decryptedText = cipher.doFinal(encryptedText);
             return decryptedText;
         } catch (InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
