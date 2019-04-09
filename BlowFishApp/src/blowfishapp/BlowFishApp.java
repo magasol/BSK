@@ -105,7 +105,6 @@ public class BlowFishApp extends Application {
                     //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
 
-                    //Client client = new Client(server.socket.getInetAddress(),port); 
                     Client client = new Client(serverAddress, port);
                     client.send(encryption.encryptedText);
                     client.stop();
@@ -135,7 +134,7 @@ public class BlowFishApp extends Application {
         startServerButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                try {  
+                try {
                     InetAddress serverAddress = InetAddress.getByName(address);
                     server = new Server(port, serverAddress);
                     System.out.println(server.getAddress());
@@ -180,7 +179,6 @@ public class BlowFishApp extends Application {
         gridPane.add(startServerButton, 0, 6);
         gridPane.add(receiveButton, 0, 7);
         gridPane.add(stopServerButton, 0, 8);
-
 
         Scene scene = new Scene(gridPane, 400, 350);
 

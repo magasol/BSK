@@ -40,7 +40,7 @@ public class Client {
 
             //out.write(cipherText);
             this.out.write(cipherText);
-            System.out.println("Aplikacja wysłała " + new String (cipherText));
+            System.out.println("Aplikacja wysłała " + new String(cipherText));
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
