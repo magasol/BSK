@@ -8,6 +8,7 @@ package blowfishapp.tcp;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -19,8 +20,10 @@ public class Server {
 
     public ServerSocket socket;
 
-    public Server(int port) throws IOException {
-        this.socket = new ServerSocket(port);
+    public Server(int port, InetAddress serverAddress) throws IOException {
+        //this.socket = new ServerSocket(port);
+        int backlog = 0;
+        this.socket = new ServerSocket(port, backlog, serverAddress);
         System.out.println("Serwer został stworzony.");
     }
 

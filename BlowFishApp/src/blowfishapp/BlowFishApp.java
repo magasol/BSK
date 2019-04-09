@@ -39,6 +39,7 @@ public class BlowFishApp extends Application {
     private KeysGenerator keysGenerator;
     Encryption encryption = null;
     int port = 9999;
+    String address = "127.0.0.3";
     Server server;
 
     @Override
@@ -102,11 +103,11 @@ public class BlowFishApp extends Application {
 
                 try {
                     //pamiętać o zmianie adresu serwera
-                    InetAddress serverAddress = InetAddress.getByName("0.0.0.0");
+                    InetAddress serverAddress = InetAddress.getByName(address);
 
                     //Client client = new Client(server.socket.getInetAddress(),port); 
                     Client client = new Client(serverAddress, port);
-                    client.send(new String(encryption.encryptedText, "UTF8"));
+                    client.send(encryption.encryptedText);
                     client.stop();
 
                 } catch (Exception ex) {
@@ -134,8 +135,9 @@ public class BlowFishApp extends Application {
         startServerButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                try {
-                    server = new Server(port);
+                try {  
+                    InetAddress serverAddress = InetAddress.getByName(address);
+                    server = new Server(port, serverAddress);
                     System.out.println(server.getAddress());
 
                 } catch (IOException ex) {

@@ -32,15 +32,15 @@ public class Client {
         System.out.println("Klient został stworzony.");
     }
 
-    public void send(String cipherText) {
+    public void send(byte[] cipherText) {
         try {
             if (!socket.isConnected()) {
                 System.out.println("Aplikacja nie połączyła się z serwerem");
             }
 
             //out.write(cipherText);
-            this.out.writeBytes(cipherText);
-            System.out.println("Aplikacja wysłała " + cipherText);
+            this.out.write(cipherText);
+            System.out.println("Aplikacja wysłała " + new String (cipherText));
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
