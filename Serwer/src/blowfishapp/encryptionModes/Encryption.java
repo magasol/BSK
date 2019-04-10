@@ -7,7 +7,6 @@ package blowfishapp.encryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,18 +28,15 @@ import javax.crypto.SecretKey;
 public class Encryption {
 
     protected String fullFileName;
-    protected String outputFileName;
-    final protected String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
     protected SecretKey keySecret;
     protected Cipher cipher;
     protected String pswd;
     public byte[] encryptedText;
 
-    public Encryption(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
+    public Encryption(String fullFileName, KeysGenerator keysGenerator) {
         try {
             cipher = Cipher.getInstance("Blowfish");
             this.fullFileName = fullFileName;
-            this.outputFileName = outputFileName;
             keySecret = keysGenerator.getKeySecret();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
@@ -54,17 +50,6 @@ public class Encryption {
         return Files.readAllBytes(path);
     }
 
-    public void writeFile(String path, byte[] text) throws FileNotFoundException {
-        try {
-            FileOutputStream outputStream
-                    = new FileOutputStream(path + "\\" + outputFileName);
-            outputStream.write(text);
-            outputStream.close();
-        } catch (IOException ex) {
-            Logger.getLogger(Encryption.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     public void encryptFile() throws IOException {
         System.out.println("szyfruj plik " + this.fullFileName);
         byte[] fileText = this.readFile();
@@ -72,7 +57,6 @@ public class Encryption {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
-            this.writeFile(outputPathEncrypted, cipherText);
 
             System.out.println("KONIEC");
 

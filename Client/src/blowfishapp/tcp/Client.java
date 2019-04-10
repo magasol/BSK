@@ -11,10 +11,9 @@ import blowfishapp.decryptionModes.DecryptionCFB;
 import blowfishapp.decryptionModes.DecryptionECB;
 import blowfishapp.decryptionModes.DecryptionOFB;
 import blowfishapp.keys.KeysGenerator;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -26,25 +25,26 @@ import java.util.logging.Logger;
  */
 public class Client {
 
-    Socket socket;
-    private DataOutputStream out;
-    private BufferedReader in;
-    Decryption encryption;
+    Socket connection;
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+    Decryption decryption;
 
     public Client(InetAddress serverAddress, int serverPort) throws Exception {
-        this.socket = new Socket(serverAddress, serverPort);
-        this.out = new DataOutputStream(socket.getOutputStream());
-        this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        this.connection = new Socket(serverAddress, serverPort);
+        this.out = new ObjectOutputStream(connection.getOutputStream());
+        this.out.flush();
+        
         System.out.println("Klient został stworzony.");
     }
 
     public void send(byte[] cipherText) {
         try {
-            if (!socket.isConnected()) {
+            if (!connection.isConnected()) {
                 System.out.println("Aplikacja nie połączyła się z serwerem");
             }
-            this.out.write(cipherText);
-            this.out.close();
+            this.out.writeObject(new String(cipherText));
+            this.out.flush();
             System.out.println("Aplikacja wysłała " + new String(cipherText));
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -53,15 +53,17 @@ public class Client {
 
     public byte[] receive() {
         try {
+            this.in = new ObjectInputStream(connection.getInputStream());
             //byte[] encryptedText = null;
             String text = "";
             String input = null;
-            while ((input = in.readLine()) != null) {
+            if ((input = (String) this.in.readObject()) != null) {
                 text = text + "\n" + input;
             }
-            this.in.close();
             return text.getBytes();
         } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
@@ -72,31 +74,32 @@ public class Client {
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
-                    encryption = new DecryptionCBC(encryptedText, outputFileName, keysGenerator);
+                    decryption = new DecryptionCBC(encryptedText, outputFileName, keysGenerator);
                     break;
                 case "CFB":
-                    encryption = new DecryptionCFB(encryptedText, outputFileName, keysGenerator);
+                    decryption = new DecryptionCFB(encryptedText, outputFileName, keysGenerator);
                     System.out.println("tryb szyfrowania cfb");
                     break;
                 case "ECB":
-                    encryption = new DecryptionECB(encryptedText, outputFileName, keysGenerator);
+                    decryption = new DecryptionECB(encryptedText, outputFileName, keysGenerator);
                     System.out.println("tryb szyfrowania ecb");
                     break;
                 case "OFB":
-                    encryption = new DecryptionOFB(encryptedText, outputFileName, keysGenerator);
+                    decryption = new DecryptionOFB(encryptedText, outputFileName, keysGenerator);
                     System.out.println("tryb szyfrowania ofb");
                     break;
                 default:
-                    encryption = new Decryption(encryptedText, outputFileName, keysGenerator);
+                    decryption = new Decryption(encryptedText, outputFileName, keysGenerator);
                     System.out.println("brak trybu szyfrowania");
             }
+            decryption.writeFile("E:\\semestr 6\\bsk\\encrypted", encryptedText);
             //byte[] decryptedText = encryption.decryptText(encryptedText);
-            encryption.writeFile("E:\\semestr 6\\bsk\\decrypted", encryptedText);
+            decryption.writeFile("E:\\semestr 6\\bsk\\decrypted", encryptedText);
         }
     }
 
     public void stop() throws IOException {
-        socket.close();
+        connection.close();
         in.close();
         out.close();
         System.out.println("Klient został zamknięty.");

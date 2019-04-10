@@ -22,8 +22,8 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class EncryptionECB extends Encryption {
 
-    public EncryptionECB(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
-        super(fullFileName, outputFileName, keysGenerator);
+    public EncryptionECB(String fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/ECB/ISO10126Padding");
         } catch (NoSuchAlgorithmException ex) {
@@ -41,8 +41,6 @@ public class EncryptionECB extends Encryption {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
-
-            this.writeFile(this.outputPathEncrypted, cipherText);
 
             System.out.println("KONIEC");
 

@@ -152,22 +152,22 @@ public class BlowFishApp extends Application {
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
-                    encryption = new EncryptionCBC(file.getPath(), outputFileName, this.keysGenerator);
+                    encryption = new EncryptionCBC(file.getPath(), this.keysGenerator);
                     break;
                 case "CFB":
-                    encryption = new EncryptionCFB(file.getPath(), outputFileName, this.keysGenerator);
+                    encryption = new EncryptionCFB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania cfb");
                     break;
                 case "ECB":
-                    encryption = new EncryptionECB(file.getPath(), outputFileName, this.keysGenerator);
+                    encryption = new EncryptionECB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania ecb");
                     break;
                 case "OFB":
-                    encryption = new EncryptionOFB(file.getPath(), outputFileName, this.keysGenerator);
+                    encryption = new EncryptionOFB(file.getPath(), this.keysGenerator);
                     System.out.println("tryb szyfrowania ofb");
                     break;
                 default:
-                    encryption = new Encryption(file.getPath(), outputFileName, this.keysGenerator);
+                    encryption = new Encryption(file.getPath(), this.keysGenerator);
                     System.out.println("brak trybu szyfrowania");
             }
             if (encryption != null) {

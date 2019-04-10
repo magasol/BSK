@@ -63,8 +63,9 @@ public class BlowFishApp extends Application {
                     InetAddress serverAddress = InetAddress.getByName(address);
                     Client client = new Client(serverAddress, port);
                     client.send("test".getBytes());
+                    byte[] receivedText = client.receive();
+                    client.decrypt("ECB", receivedText, outputFileNameTextField.getText(), keysGenerator);  //ODEBRANE OD SERWERA 
                     client.stop();
-
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }

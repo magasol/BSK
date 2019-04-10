@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="Client.jnlp">
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="Serwer.jnlp">
   <information>
-    <title>Client</title>
+    <title>Serwer</title>
     <vendor>Magdalena</vendor>
     <description>null</description>
     <offline-allowed/>
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="Client.jar" size="16926" download="eager" />
+    <jar href="Serwer.jar" size="20931" download="eager" />
   </resources>
-  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="Client" >
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="Serwer" >
     <param name="requiredFXVersion" value="8.0+"/>
   </applet-desc>
-  <jfx:javafx-desc  width="800" height="600" main-class="blowfishapp.BlowFishApp"  name="Client" />
+  <jfx:javafx-desc  width="800" height="600" main-class="blowfishapp.BlowFishApp"  name="Serwer" />
   <update check="always"/>
 </jnlp>

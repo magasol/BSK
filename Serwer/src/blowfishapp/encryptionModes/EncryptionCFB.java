@@ -7,7 +7,6 @@ package blowfishapp.encryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -28,8 +27,8 @@ public class EncryptionCFB extends Encryption {
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionCFB(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
-        super(fullFileName, outputFileName, keysGenerator);
+    public EncryptionCFB(String fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
 
@@ -49,8 +48,6 @@ public class EncryptionCFB extends Encryption {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
-
-            this.writeFile(this.outputPathEncrypted, cipherText);
 
             byte[] ivBytes = cipher.getIV();
             if (ivBytes != null) {

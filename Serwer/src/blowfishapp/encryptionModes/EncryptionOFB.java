@@ -28,8 +28,8 @@ public class EncryptionOFB extends Encryption {
     private IvParameterSpec iv;
     private SecretKeySpec secretKeySpec;
 
-    public EncryptionOFB(String fullFileName, String outputFileName, KeysGenerator keysGenerator) {
-        super(fullFileName, outputFileName, keysGenerator);
+    public EncryptionOFB(String fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/OFB/ISO10126Padding");
 
@@ -49,8 +49,6 @@ public class EncryptionOFB extends Encryption {
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
-            
-            this.writeFile(this.outputPathEncrypted, cipherText);
 
             byte[] ivBytes = cipher.getIV();
             if (ivBytes != null) {
@@ -59,7 +57,7 @@ public class EncryptionOFB extends Encryption {
 
             byte[] keyBytes = keySecret.getEncoded();
             secretKeySpec = new SecretKeySpec(keyBytes, "Blowfish");
-            
+
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {
