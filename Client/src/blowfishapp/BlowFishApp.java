@@ -72,26 +72,6 @@ public class BlowFishApp extends Application {
             }
         });
 
-        Button receiveButton = new Button();
-        receiveButton.setText("Receive");
-        receiveButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-
-                try {
-                    //pamiętać o zmianie adresu serwera
-                    InetAddress serverAddress = InetAddress.getByName(address);
-                    Client client = new Client(serverAddress, port);
-                    byte[] receivedText = client.receive();
-                    client.decrypt("ECB", receivedText, outputFileNameTextField.getText(), keysGenerator);  //ODEBRANE OD SERWERA 
-                    client.stop();
-
-                } catch (Exception ex) {
-                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-
         GridPane gridPane = new GridPane();
 
         gridPane.setHgap(10);
@@ -102,8 +82,7 @@ public class BlowFishApp extends Application {
         gridPane.add(pswdText, 0, 3);
         gridPane.add(pswdField, 1, 3);
         gridPane.add(pswdButton, 2, 3);
-        gridPane.add(sendButton, 0, 5);
-        gridPane.add(receiveButton, 1, 5);
+        gridPane.add(sendButton, 0, 4);
 
         Scene scene = new Scene(gridPane, 400, 350);
 

@@ -76,6 +76,8 @@ public class Server {
     public void stop() {
         try {
             serverSocket.close();
+            this.in.close();
+            this.out.close();
             System.out.println("Serwer został zamknięty.");
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
