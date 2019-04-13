@@ -46,19 +46,15 @@ public class Server {
             this.out = new ObjectOutputStream(connection.getOutputStream());
             this.out.flush();
             this.in = new ObjectInputStream(connection.getInputStream());
-            
-            String text = ""; //zmienic na byte
-            String input; //zmienić na byte[]
+            int len = in.readInt(); 
+            byte[] encryptedText = new byte[len];
+            if (len > 0) {
+                in.readFully(encryptedText);
+            }
+            System.out.println("Serwer odebrał: " + new String(encryptedText));
 
-                if ((input = (String)this.in.readObject()) != null) {
-                    text = text + "\n" + input;
-                }
-            System.out.println("Serwer odebrał: " + text);
-
-            return text.getBytes();
+            return encryptedText;
         } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
@@ -66,8 +62,10 @@ public class Server {
 
     public void send(int port, byte[] encryptedText) {
         try {
-            this.out.writeObject(new String(encryptedText));
+            this.out.writeInt(encryptedText.length);
+            this.out.write(encryptedText,0,encryptedText.length);
             this.out.flush();
+            System.out.println("serwer wysłał " + new String(encryptedText));
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }

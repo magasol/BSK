@@ -43,7 +43,8 @@ public class Client {
             if (!connection.isConnected()) {
                 System.out.println("Aplikacja nie połączyła się z serwerem");
             }
-            this.out.writeObject(new String(cipherText));
+            this.out.writeInt(cipherText.length);
+            this.out.write(cipherText,0,cipherText.length);
             this.out.flush();
             System.out.println("Aplikacja wysłała " + new String(cipherText));
         } catch (IOException ex) {
@@ -54,16 +55,14 @@ public class Client {
     public byte[] receive() {
         try {
             this.in = new ObjectInputStream(connection.getInputStream());
-            //byte[] encryptedText = null;
-            String text = "";
-            String input = null;
-            if ((input = (String) this.in.readObject()) != null) {
-                text = text + "\n" + input;
+            int len = in.readInt();
+            byte[] encryptedText = new byte[len];
+            if (len > 0) {
+                in.readFully(encryptedText);
             }
-            return text.getBytes();
+            System.out.println("Aplikacja odebrała: " + new String(encryptedText));
+            return encryptedText;
         } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
