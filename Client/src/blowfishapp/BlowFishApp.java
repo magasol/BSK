@@ -22,6 +22,9 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import blowfishapp.tcp.*;
 import java.net.InetAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javafx.concurrent.Task;
 
 /**
  *
@@ -34,6 +37,8 @@ public class BlowFishApp extends Application {
     String address = "127.0.0.3";
     int port = 9999;
 
+    
+    
     @Override
     public void start(Stage primaryStage) {
         Text outputFileNameText = new Text("Plik wyjściowy");
@@ -59,13 +64,17 @@ public class BlowFishApp extends Application {
             public void handle(ActionEvent event) {
 
                 try {
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
                     //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
                     Client client = new Client(serverAddress, port);
-                    client.send("test".getBytes());
-                    byte[] receivedText = client.receive();
-                    client.decrypt("ECB", receivedText, outputFileNameTextField.getText(), keysGenerator);  //ODEBRANE OD SERWERA 
-                    client.stop();
+                    Task<Void> task = new Send(serverAddress, port, "test".getBytes());
+                    executor.submit(task);
+                    //client.send("test".getBytes());
+                    //byte[] receivedText = client.receive();
+                    //client.decrypt("ECB", receivedText, outputFileNameTextField.getText(), keysGenerator);  //ODEBRANE OD SERWERA 
+                    //client.stop();
+                    
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -86,7 +95,7 @@ public class BlowFishApp extends Application {
 
         Scene scene = new Scene(gridPane, 400, 350);
 
-        primaryStage.setTitle("Aplikacja szyfrująca");
+        primaryStage.setTitle("Klient");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

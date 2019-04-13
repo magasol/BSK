@@ -22,7 +22,7 @@ public class Server {
 
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    private Socket connection;
+    //private Socket connection;
     public ServerSocket serverSocket;
 
     public Server(int port, InetAddress serverAddress) {
@@ -40,9 +40,9 @@ public class Server {
         return serverSocket.getInetAddress().toString();
     }
 
-    public byte[] listen() {
+    public byte[] listen(Socket connection) {
         try {
-            this.connection = serverSocket.accept();
+            //this.connection = serverSocket.accept();
             this.out = new ObjectOutputStream(connection.getOutputStream());
             this.out.flush();
             this.in = new ObjectInputStream(connection.getInputStream());

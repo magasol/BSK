@@ -26,6 +26,11 @@ import blowfishapp.encryptionModes.*;
 import blowfishapp.keys.KeysGenerator;
 import blowfishapp.tcp.*;
 import java.net.InetAddress;
+import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -45,6 +50,14 @@ public class BlowFishApp extends Application {
 
         Text encryptionTypeText = new Text("Tryb szyfrowania");
         Text inputFileNameText = new Text("Nazwa pliku");
+        
+        ExecutorService executor = new ThreadPoolExecutor( 
+                 3, //minimalna liczba wątków
+                 16, //maksymalna liczba wątków 
+                 120, //maksymalny czas nieaktywności wątków 
+                 TimeUnit.SECONDS, 
+                 new LinkedBlockingQueue<>() //kolejka zadań
+         );
 
         ObservableList<String> names = FXCollections.observableArrayList(
                 "ECB", "CBC", "CFB", "OFB", "NONE");
@@ -105,7 +118,25 @@ public class BlowFishApp extends Application {
         receiveServerButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                server.listen();
+                while(true){
+                   // try {
+                        final Socket connection;
+                    try {
+                        connection = server.serverSocket.accept();
+                        executor.submit(() -> {server.listen(connection);}); 
+                        
+                    } catch (IOException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                        
+                        //connection.close();
+                        
+                   // } catch (IOException ex) {
+                   //     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    //}
+                  
+            }
+                
             }
         });
 
@@ -135,7 +166,7 @@ public class BlowFishApp extends Application {
 
         Scene scene = new Scene(gridPane, 400, 350);
 
-        primaryStage.setTitle("Aplikacja szyfrująca");
+        primaryStage.setTitle("Serwer");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

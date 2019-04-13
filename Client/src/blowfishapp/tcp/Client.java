@@ -38,7 +38,7 @@ public class Client {
         System.out.println("Klient został stworzony.");
     }
 
-    public void send(byte[] cipherText) {
+    /*public void send(byte[] cipherText) {
         try {
             if (!connection.isConnected()) {
                 System.out.println("Aplikacja nie połączyła się z serwerem");
@@ -50,7 +50,7 @@ public class Client {
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
+    }*/
 
     public byte[] receive() {
         try {
@@ -91,16 +91,18 @@ public class Client {
                     decryption = new Decryption(encryptedText, outputFileName, keysGenerator);
                     System.out.println("brak trybu szyfrowania");
             }
-            decryption.writeFile("E:\\semestr 6\\bsk\\encrypted", encryptedText);
+           // decryption.writeFile("E:\\semestr 6\\bsk\\encrypted", encryptedText);
+            decryption.writeFile("D:\\STUDIA\\VI semestr\\BSK", encryptedText);
             //byte[] decryptedText = encryption.decryptText(encryptedText);
-            decryption.writeFile("E:\\semestr 6\\bsk\\decrypted", encryptedText);
+            //decryption.writeFile("E:\\semestr 6\\bsk\\decrypted", encryptedText);
+            decryption.writeFile("D:\\STUDIA\\VI semestr\\BSK", encryptedText);
         }
     }
 
     public void stop() throws IOException {
         connection.close();
         in.close();
-        out.close();
+        //out.close();
         System.out.println("Klient został zamknięty.");
     }
 
