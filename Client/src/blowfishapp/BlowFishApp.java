@@ -35,9 +35,7 @@ public class BlowFishApp extends Application {
     private KeysGenerator keysGenerator;
     Decryption encryption = null;
     String address = "127.0.0.3";
-    int port = 9999;
-
-    
+    int port = 9999;    
     
     @Override
     public void start(Stage primaryStage) {
@@ -68,7 +66,7 @@ public class BlowFishApp extends Application {
                     //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
                     //Client client = new Client(serverAddress, port);
-                    Task<Void> task = new Send(serverAddress, port, "test".getBytes());
+                    Task<Void> task = new Send(serverAddress, port, "test".getBytes(),outputFileNameTextField.getText(),pswdField.getText());
                     executor.submit(task);
                     //client.send("test".getBytes());
                     //byte[] receivedText = client.receive();
@@ -105,9 +103,7 @@ public class BlowFishApp extends Application {
      */
     public static void main(String[] args) {
         launch(args);
-    }
-
-    private void generateKeys(String pswd) {
+    }  private void generateKeys(String pswd) {
         this.keysGenerator = new KeysGenerator(pswd);
     }
 }
