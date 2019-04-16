@@ -16,92 +16,115 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.concurrent.Task;
 
 /**
  *
  * @author Aleksandra
  */
-public class Client {
-
-    Socket connection;
+public class Client extends Task<Void> {
+    //final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    //final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
+    final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
+    final private int PORT;
+    InetAddress serverAddress;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    Decryption decryption;
-
-    public Client(InetAddress serverAddress, int serverPort) throws Exception {
-        this.connection = new Socket(serverAddress, serverPort);
-        this.out = new ObjectOutputStream(connection.getOutputStream());
-        this.out.flush();
-        
-        System.out.println("Klient został stworzony.");
+    boolean flag = true;
+    private Decryption decryption;
+    private String outputFileName;
+    private KeysGenerator keysGenerator;
+    private String pswd;
+    
+    public Client(InetAddress serverAddress, int serverPort, String outputFile, String pswd) {
+        this.PORT = serverPort;
+        this.serverAddress = serverAddress;
+        this.outputFileName = outputFile;
+        this.pswd = pswd;
     }
 
-    /*public void send(byte[] cipherText) {
+    @Override
+    protected Void call() throws Exception {
+
+        Socket socket = new Socket(serverAddress, PORT);
+        this.out = new ObjectOutputStream(socket.getOutputStream());
+        this.out.flush();
+
         try {
-            if (!connection.isConnected()) {
+            if (!socket.isConnected()) {
                 System.out.println("Aplikacja nie połączyła się z serwerem");
             }
+            generateKeys(pswd);
+            byte[] cipherText = "test".getBytes();
             this.out.writeInt(cipherText.length);
-            this.out.write(cipherText,0,cipherText.length);
+            this.out.write(cipherText, 0, cipherText.length);
             this.out.flush();
             System.out.println("Aplikacja wysłała " + new String(cipherText));
-        } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }*/
-
-    /*public byte[] receive() {
-        try {
-            this.in = new ObjectInputStream(connection.getInputStream());
-            int len = in.readInt();
-            byte[] encryptedText = new byte[len];
-            if (len > 0) {
-                in.readFully(encryptedText);
-            }
-            System.out.println("Aplikacja odebrała: " + new String(encryptedText));
-            return encryptedText;
+            byte[] encryptedText = receive(socket);
+            decrypt("ECB",encryptedText);
+            out.close();
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
-    }*/
+    }
 
-    public void decrypt(String value, byte[] encryptedText, String outputFileName, KeysGenerator keysGenerator) throws IOException {
+    private byte[] receive(Socket socket) {
+        while (flag) {
+            try {
+                this.in = new ObjectInputStream(socket.getInputStream());
+                int len = in.readInt();
+                byte[] encryptedText = new byte[len];
+                if (len > 0) {
+                    in.readFully(encryptedText);
+                    //System.out.println("Aplikacja odebrała: " + new String(encryptedText));
+                    System.out.println("Aplikacja odebrała: plik od serwera");
+                    flag = false;
+                }
+
+                return encryptedText;
+            } catch (IOException ex) {
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        }
+        flag = true;
+        return null;
+    }
+
+    private void decrypt(String value, byte[] encryptedText) throws IOException {
         if (encryptedText != null) {
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
-                    decryption = new DecryptionCBC(encryptedText, outputFileName, keysGenerator);
+                    decryption = new DecryptionCBC(encryptedText, this.outputFileName, this.keysGenerator);
                     break;
                 case "CFB":
-                    decryption = new DecryptionCFB(encryptedText, outputFileName, keysGenerator);
+                    decryption = new DecryptionCFB(encryptedText, this.outputFileName, this.keysGenerator);
                     System.out.println("tryb szyfrowania cfb");
                     break;
                 case "ECB":
-                    decryption = new DecryptionECB(encryptedText, outputFileName, keysGenerator);
+                    decryption = new DecryptionECB(encryptedText, this.outputFileName, this.keysGenerator);
                     System.out.println("tryb szyfrowania ecb");
                     break;
                 case "OFB":
-                    decryption = new DecryptionOFB(encryptedText, outputFileName, keysGenerator);
+                    decryption = new DecryptionOFB(encryptedText, outputFileName, this.keysGenerator);
                     System.out.println("tryb szyfrowania ofb");
                     break;
                 default:
-                    decryption = new Decryption(encryptedText, outputFileName, keysGenerator);
+                    decryption = new Decryption(encryptedText, outputFileName, this.keysGenerator);
                     System.out.println("brak trybu szyfrowania");
             }
-           // decryption.writeFile("E:\\semestr 6\\bsk\\encrypted", encryptedText);
-            decryption.writeFile("D:\\STUDIA\\VI semestr\\BSK", encryptedText);
+            decryption.writeFile(outputPathEncrypted, encryptedText);
             //byte[] decryptedText = encryption.decryptText(encryptedText);
-            //decryption.writeFile("E:\\semestr 6\\bsk\\decrypted", encryptedText);
-            decryption.writeFile("D:\\STUDIA\\VI semestr\\BSK", encryptedText);
+            decryption.writeFile(outputPathDecrypted, encryptedText);
         }
     }
-
-    public void stop() throws IOException {
-        connection.close();
-        in.close();
-        //out.close();
-        System.out.println("Klient został zamknięty.");
+    
+    private void generateKeys(String pswd) {
+        this.keysGenerator = new KeysGenerator(pswd);
     }
-
 }

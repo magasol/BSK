@@ -25,9 +25,6 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class EncryptionOFB extends Encryption {
 
-    private IvParameterSpec iv;
-    private SecretKeySpec secretKeySpec;
-
     public EncryptionOFB(String fullFileName, KeysGenerator keysGenerator) {
         super(fullFileName, keysGenerator);
         try {

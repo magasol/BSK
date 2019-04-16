@@ -25,9 +25,6 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class EncryptionCBC extends Encryption {
 
-    private IvParameterSpec iv;
-    private SecretKeySpec secretKeySpec;
-
     public EncryptionCBC(String fullFileName, KeysGenerator keysGenerator) {
         super(fullFileName, keysGenerator);
         try {

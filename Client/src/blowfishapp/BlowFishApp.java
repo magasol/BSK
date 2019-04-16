@@ -17,7 +17,6 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import blowfishapp.keys.KeysGenerator;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import blowfishapp.tcp.*;
@@ -32,11 +31,10 @@ import javafx.concurrent.Task;
  */
 public class BlowFishApp extends Application {
 
-    private KeysGenerator keysGenerator;
     Decryption encryption = null;
     String address = "127.0.0.3";
-    int port = 9999;    
-    
+    int port = 9999;
+
     @Override
     public void start(Stage primaryStage) {
         Text outputFileNameText = new Text("Plik wyjściowy");
@@ -44,16 +42,6 @@ public class BlowFishApp extends Application {
 
         Text pswdText = new Text("Hasło");
         PasswordField pswdField = new PasswordField();
-
-        //na razie tworzenie kluczy, później będą tworzone w momencie nawiązania połączenia
-        Button pswdButton = new Button();
-        pswdButton.setText("Create Keys");
-        pswdButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                generateKeys(pswdField.getText());
-            }
-        });
 
         Button sendButton = new Button();
         sendButton.setText("Send");
@@ -65,14 +53,8 @@ public class BlowFishApp extends Application {
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
-                    //Client client = new Client(serverAddress, port);
-                    Task<Void> task = new Send(serverAddress, port, "test".getBytes(),outputFileNameTextField.getText(),pswdField.getText());
+                    Task<Void> task = new Client(serverAddress, port, outputFileNameTextField.getText(), pswdField.getText());
                     executor.submit(task);
-                    //client.send("test".getBytes());
-                    //byte[] receivedText = client.receive();
-                    //client.decrypt("ECB", receivedText, outputFileNameTextField.getText(), keysGenerator);  //ODEBRANE OD SERWERA 
-                    //client.stop();
-                    
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -88,7 +70,6 @@ public class BlowFishApp extends Application {
         gridPane.add(outputFileNameTextField, 1, 2);
         gridPane.add(pswdText, 0, 3);
         gridPane.add(pswdField, 1, 3);
-        gridPane.add(pswdButton, 2, 3);
         gridPane.add(sendButton, 0, 4);
 
         Scene scene = new Scene(gridPane, 400, 350);
@@ -103,7 +84,5 @@ public class BlowFishApp extends Application {
      */
     public static void main(String[] args) {
         launch(args);
-    }  private void generateKeys(String pswd) {
-        this.keysGenerator = new KeysGenerator(pswd);
     }
 }

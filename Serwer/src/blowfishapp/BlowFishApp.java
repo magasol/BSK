@@ -22,8 +22,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import blowfishapp.encryptionModes.*;
-import blowfishapp.keys.KeysGenerator;
 import blowfishapp.tcp.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -38,9 +36,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BlowFishApp extends Application {
 
-    private File file;
-    private KeysGenerator keysGenerator;
-    Encryption encryption = null;
+    File file;
     int port = 9999;
     String address = "127.0.0.3";
     Server server;
@@ -51,14 +47,14 @@ public class BlowFishApp extends Application {
 
         Text encryptionTypeText = new Text("Tryb szyfrowania");
         Text inputFileNameText = new Text("Nazwa pliku");
-        
-        ExecutorService executor = new ThreadPoolExecutor( 
-                 3, //minimalna liczba wątków
-                 16, //maksymalna liczba wątków 
-                 120, //maksymalny czas nieaktywności wątków 
-                 TimeUnit.SECONDS, 
-                 new LinkedBlockingQueue<>() //kolejka zadań
-         );
+
+        ExecutorService executor = new ThreadPoolExecutor(
+                3, //minimalna liczba wątków
+                16, //maksymalna liczba wątków 
+                120, //maksymalny czas nieaktywności wątków 
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<>() //kolejka zadań
+        );
 
         ObservableList<String> names = FXCollections.observableArrayList(
                 "ECB", "CBC", "CFB", "OFB", "NONE");
@@ -71,28 +67,20 @@ public class BlowFishApp extends Application {
         chooseFileButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(final ActionEvent e) {
-                File f = fileChooser.showOpenDialog(primaryStage);
-                if (f != null) {
-                    file = f;
-                    inputFileNameText.setText(f.getName());
+                file = fileChooser.showOpenDialog(primaryStage);
+                if (file != null) {
+                    inputFileNameText.setText(file.getName());
                 }
             }
         });
-
-        String pswdField = "key";
-        String outputFileNameTextField = "Plik.txt";
 
         Button sendButton = new Button();
         sendButton.setText("Send");
         sendButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-
                 try {
-                    generateKeys(pswdField);
-                    encrypt(encryptionChoiceBox.getValue(), outputFileNameTextField);
-                    server.send(port, encryption.encryptedText);
-
+                    server.send(port, encryptionChoiceBox.getValue(), file);
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -119,27 +107,20 @@ public class BlowFishApp extends Application {
         receiveServerButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                while(flag){
-                   // try {
-                        final Socket connection;
+                while (flag) {
+                    final Socket connection;
                     try {
                         connection = server.serverSocket.accept();
-                        executor.submit(() -> {server.listen(connection);});
+                        executor.submit(() -> {
+                            server.listen(connection);
+                        });
                         flag = false;
-                        
                     } catch (IOException ex) {
                         Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                        
-                        //connection.close();
-                        
-                   // } catch (IOException ex) {
-                   //     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
-                    //}
-                  
-            }
+                }
                 flag = true;
-                
+
             }
         });
 
@@ -179,38 +160,5 @@ public class BlowFishApp extends Application {
      */
     public static void main(String[] args) {
         launch(args);
-    }
-
-    private void encrypt(String value, String outputFileName) throws IOException {
-        if (file != null) {
-            switch (value) {
-                case "CBC":
-                    System.out.println("tryb szyfrowania cbc");
-                    encryption = new EncryptionCBC(file.getPath(), this.keysGenerator);
-                    break;
-                case "CFB":
-                    encryption = new EncryptionCFB(file.getPath(), this.keysGenerator);
-                    System.out.println("tryb szyfrowania cfb");
-                    break;
-                case "ECB":
-                    encryption = new EncryptionECB(file.getPath(), this.keysGenerator);
-                    System.out.println("tryb szyfrowania ecb");
-                    break;
-                case "OFB":
-                    encryption = new EncryptionOFB(file.getPath(), this.keysGenerator);
-                    System.out.println("tryb szyfrowania ofb");
-                    break;
-                default:
-                    encryption = new Encryption(file.getPath(), this.keysGenerator);
-                    System.out.println("brak trybu szyfrowania");
-            }
-            if (encryption != null) {
-                encryption.encryptFile();
-            }
-        }
-    }
-
-    private void generateKeys(String pswd) {
-        this.keysGenerator = new KeysGenerator(pswd);
     }
 }

@@ -39,7 +39,7 @@ public final class KeysGenerator {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             this.pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
-            System.out.println("Skrót hasła: " + new String(this.pswdShortcut));
+            //System.out.println("Skrót hasła: " + new String(this.pswdShortcut));
             return this.pswdShortcut;
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
@@ -59,8 +59,8 @@ public final class KeysGenerator {
             SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(pswd);
             DecryptionCBC encryption = new DecryptionCBC(null,null,this);
             byte[] privateKeyBytes = encryption.encryptText(privateKey.getEncoded(), secretKeySpec);
-            System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
-            System.out.println(new String(publicKey.getEncoded()));
+            //System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
+            //System.out.println(new String(publicKey.getEncoded()));
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
