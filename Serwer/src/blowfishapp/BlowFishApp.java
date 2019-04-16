@@ -44,6 +44,7 @@ public class BlowFishApp extends Application {
     int port = 9999;
     String address = "127.0.0.3";
     Server server;
+    boolean flag = true;
 
     @Override
     public void start(Stage primaryStage) {
@@ -118,12 +119,13 @@ public class BlowFishApp extends Application {
         receiveServerButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                while(true){
+                while(flag){
                    // try {
                         final Socket connection;
                     try {
                         connection = server.serverSocket.accept();
-                        executor.submit(() -> {server.listen(connection);}); 
+                        executor.submit(() -> {server.listen(connection);});
+                        flag = false;
                         
                     } catch (IOException ex) {
                         Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
@@ -136,6 +138,7 @@ public class BlowFishApp extends Application {
                     //}
                   
             }
+                flag = true;
                 
             }
         });

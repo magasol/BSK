@@ -52,7 +52,7 @@ public class Client {
         }
     }*/
 
-    public byte[] receive() {
+    /*public byte[] receive() {
         try {
             this.in = new ObjectInputStream(connection.getInputStream());
             int len = in.readInt();
@@ -66,7 +66,7 @@ public class Client {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
-    }
+    }*/
 
     public void decrypt(String value, byte[] encryptedText, String outputFileName, KeysGenerator keysGenerator) throws IOException {
         if (encryptedText != null) {

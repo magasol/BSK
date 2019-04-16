@@ -67,7 +67,7 @@ public class BlowFishApp extends Application {
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
-                    Client client = new Client(serverAddress, port);
+                    //Client client = new Client(serverAddress, port);
                     Task<Void> task = new Send(serverAddress, port, "test".getBytes());
                     executor.submit(task);
                     //client.send("test".getBytes());
