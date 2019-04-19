@@ -49,8 +49,7 @@ public class BlowFishApp extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        Text encryptionTypeText = new Text("Tryb szyfrowania");
-        Text inputFileNameText = new Text("Nazwa pliku");
+        //Text inputFileNameText = new Text("Nazwa pliku");
         
         ExecutorService executor = new ThreadPoolExecutor( 
                  3, //minimalna liczba wątków
@@ -60,15 +59,11 @@ public class BlowFishApp extends Application {
                  new LinkedBlockingQueue<>() //kolejka zadań
          );
 
-        ObservableList<String> names = FXCollections.observableArrayList(
-                "ECB", "CBC", "CFB", "OFB", "NONE");
-        ChoiceBox<String> encryptionChoiceBox = new ChoiceBox<>(names);
+        //final FileChooser fileChooser = new FileChooser();
 
-        final FileChooser fileChooser = new FileChooser();
+        //final Button chooseFileButton = new Button("Wybierz plik");
 
-        final Button chooseFileButton = new Button("Wybierz plik");
-
-        chooseFileButton.setOnAction(new EventHandler<ActionEvent>() {
+        /*chooseFileButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(final ActionEvent e) {
                 File f = fileChooser.showOpenDialog(primaryStage);
@@ -77,7 +72,7 @@ public class BlowFishApp extends Application {
                     inputFileNameText.setText(f.getName());
                 }
             }
-        });
+        });*/
 
         String pswdField = "key";
         String outputFileNameTextField = "Plik.txt";
@@ -90,9 +85,8 @@ public class BlowFishApp extends Application {
 
                 try {
                     generateKeys(pswdField);
-                    encrypt(encryptionChoiceBox.getValue(), outputFileNameTextField);
+                    encrypt(new String(server.type), outputFileNameTextField);
                     server.send(port, encryption.encryptedText);
-
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -126,7 +120,7 @@ public class BlowFishApp extends Application {
                         connection = server.serverSocket.accept();
                         executor.submit(() -> {server.listen(connection);});
                         flag = false;
-                        
+                        file = new File(new String(server.filePath));
                     } catch (IOException ex) {
                         Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -158,10 +152,8 @@ public class BlowFishApp extends Application {
         gridPane.setVgap(10);
         gridPane.setPadding(new Insets(10, 10, 10, 10));
 
-        gridPane.add(encryptionTypeText, 0, 1);
-        gridPane.add(encryptionChoiceBox, 1, 1);
-        gridPane.add(chooseFileButton, 0, 2);
-        gridPane.add(inputFileNameText, 1, 2);
+        //gridPane.add(chooseFileButton, 0, 2);
+        //gridPane.add(inputFileNameText, 1, 2);
         gridPane.add(startServerButton, 0, 0);
         gridPane.add(sendButton, 0, 3);
         gridPane.add(stopServerButton, 1, 0);

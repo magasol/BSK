@@ -24,6 +24,8 @@ public class Server {
     private ObjectInputStream in;
     //private Socket connection;
     public ServerSocket serverSocket;
+    public byte[] type;
+    public byte[] filePath;
 
     public Server(int port, InetAddress serverAddress) {
         try {
@@ -47,6 +49,23 @@ public class Server {
             this.out.flush();
             this.in = new ObjectInputStream(connection.getInputStream());
             int len = in.readInt(); 
+            byte[] path = new byte[len];
+            if(len > 0){
+                in.readFully(path);
+            }
+            System.out.println("Serwer odebrał ścieżke do pliku: " + new String(path));
+            this.filePath = path;
+            
+            len = in.readInt(); 
+            byte[] type = new byte[len];
+            if(len > 0)
+            {
+                in.readFully(type);
+            }
+            System.out.println("Serwer odebrał tryb kodowania: " + new String(type));
+            this.type = type;
+            
+            len = in.readInt(); 
             byte[] encryptedText = new byte[len];
             if (len > 0) {
                 in.readFully(encryptedText);
