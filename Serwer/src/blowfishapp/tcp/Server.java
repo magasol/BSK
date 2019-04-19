@@ -5,6 +5,13 @@
  */
 package blowfishapp.tcp;
 
+import blowfishapp.encryptionModes.Encryption;
+import blowfishapp.encryptionModes.EncryptionCBC;
+import blowfishapp.encryptionModes.EncryptionCFB;
+import blowfishapp.encryptionModes.EncryptionECB;
+import blowfishapp.encryptionModes.EncryptionOFB;
+import blowfishapp.keys.KeysGenerator;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,16 +29,18 @@ public class Server {
 
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    //private Socket connection;
     public ServerSocket serverSocket;
     public byte[] type;
     public byte[] filePath;
+    private KeysGenerator keysGenerator;
+    Encryption encryption = null;
+
 
     public Server(int port, InetAddress serverAddress) {
         try {
             int backlog = 0;
             this.serverSocket = new ServerSocket(port, backlog, serverAddress);
-            
+
             System.out.println("Serwer został stworzony.");
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
@@ -44,7 +53,6 @@ public class Server {
 
     public byte[] listen(Socket connection) {
         try {
-            //this.connection = serverSocket.accept();
             this.out = new ObjectOutputStream(connection.getOutputStream());
             this.out.flush();
             this.in = new ObjectInputStream(connection.getInputStream());
@@ -66,12 +74,13 @@ public class Server {
             this.type = type;
             
             len = in.readInt(); 
+
             byte[] encryptedText = new byte[len];
             if (len > 0) {
                 in.readFully(encryptedText);
             }
-            System.out.println("Serwer odebrał: " + new String(encryptedText));
-
+            //System.out.println("Serwer odebrał: " + new String(encryptedText));
+            System.out.println("Serwer odebrał: prosbe o plik");
             return encryptedText;
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
@@ -79,15 +88,55 @@ public class Server {
         return null;
     }
 
-    public void send(int port, byte[] encryptedText) {
+    public void send(int port) {
         try {
-            this.out.writeInt(encryptedText.length);
-            this.out.write(encryptedText,0,encryptedText.length);
+            String pswd = "key";
+            generateKeys(pswd); //jeszcze nie ma przesyalania
+            encrypt(new String(this.type),new File(new String(this.filePath)));
+            this.out.writeInt(encryption.encryptedText.length);
+            this.out.write(encryption.encryptedText, 0, encryption.encryptedText.length);
             this.out.flush();
-            System.out.println("serwer wysłał " + new String(encryptedText));
+            //System.out.println("serwer wysłał " + new String(encryptedText));
+            System.out.println("serwer wysłał plik");
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void encrypt(String value, File file) throws IOException {
+        if (file != null) {
+            String pswd = "key";
+            generateKeys(pswd);
+            switch (value) {
+                case "CBC":
+                    System.out.println("tryb szyfrowania cbc");
+                    encryption = new EncryptionCBC(file.getPath(), this.keysGenerator);
+                    break;
+                case "CFB":
+                    encryption = new EncryptionCFB(file.getPath(), this.keysGenerator);
+                    System.out.println("tryb szyfrowania cfb");
+                    break;
+                case "ECB":
+                    encryption = new EncryptionECB(file.getPath(), this.keysGenerator);
+                    System.out.println("tryb szyfrowania ecb");
+                    break;
+                case "OFB":
+                    encryption = new EncryptionOFB(file.getPath(), this.keysGenerator);
+                    System.out.println("tryb szyfrowania ofb");
+                    break;
+                default:
+                    encryption = new Encryption(file.getPath(), this.keysGenerator);
+                    System.out.println("brak trybu szyfrowania");
+            }
+
+            if (encryption != null) {
+                encryption.encryptFile();
+            }
+        }
+    }
+
+    private void generateKeys(String pswd) {
+        this.keysGenerator = new KeysGenerator(pswd);
     }
 
     public void stop() {

@@ -24,9 +24,6 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class EncryptionCFB extends Encryption {
 
-    private IvParameterSpec iv;
-    private SecretKeySpec secretKeySpec;
-
     public EncryptionCFB(String fullFileName, KeysGenerator keysGenerator) {
         super(fullFileName, keysGenerator);
         try {

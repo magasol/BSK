@@ -1,0 +1,23 @@
+-przeniesienie wyboru trybu szyfrowania do klienta
+-zmiana sposobu przesy³ania, ¿eby nie przeci¹¿aæ stosu
+-przesy³anie: klucza, wektora, SpecKeySecret(?)
+-zapis kluczy rsa public i private na dysku -MAGDA-DZISIAJ
+-szyfrowanie klucza sesyjnego kluczem prywatnym -MAGDA
+-utrzymanie rozszerzenia pliku
+-kiedy b³¹d deszyfracji generowanie losowego ci¹gu zero-jedynkowego
+-wskaznik procesu przesylania danych
+-Nale¿y równie¿ pamiêtaæ o koniecznoœci przes³ania w postaci
+zaszyfrowanej z u¿yciem klucza publicznego RSA u¿ytkownika podstawowych
+parametrów procedury szyfrowania (algorytm, rozmiar klucza, rozmiar bloku, tryb
+szyfrowania, wektor pocz¹tkowy, odbiorcy szyfrogramu) oraz rozszerzenia
+szyfrowanego pliku - czyli jednak trzeba szyfrowaæ te wszystkie dane? - na konsultacjach powiedzia³ ¿e nie
+-zmieniæ fukcje które mog¹ byæ prywatne na prywatne
+
+skomplikowane:
+-obs³ugiwanie wiecej ni¿ jednego u¿ytownika
+-skonfigurowanie œrodowiska, maszyny wirtualnej
+
+
+z instrukcji o co chodzi:
+-Dla trybu CFB i OFB podczas wyboru d³ugoœci podbloku mniejszego od d³ugoœci bloku algorytmu kolejne d³ugoœci podbloku powinny byæ potêg¹ liczby 2.
+

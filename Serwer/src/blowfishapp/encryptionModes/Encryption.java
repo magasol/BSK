@@ -20,6 +20,8 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
@@ -31,6 +33,8 @@ public class Encryption {
     protected SecretKey keySecret;
     protected Cipher cipher;
     protected String pswd;
+    protected IvParameterSpec iv;
+    protected SecretKeySpec secretKeySpec;
     public byte[] encryptedText;
 
     public Encryption(String fullFileName, KeysGenerator keysGenerator) {
