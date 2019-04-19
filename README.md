@@ -6,6 +6,13 @@ Aktualna obsługa/uruchamianie:
 2.Client: wypelnij nazwe pliku bo po wysłaniu klient się zawiesza
 3.Client: wypelnij pole hasła
 4.Client: generate keys, bo inaczej wyrzuci null przy towrzeniu decryption
-5.Server: tryb
-6.Server: wybierz plik
-7.Server: send
+5.Client: Send
+6.Server: Receive
+7.Server: tryb
+8.Server: wybierz plik
+9.Server: send
+
+przed push origin master:
+a) skasować folder run<liczby> z folderu Client/dist i Server/dist
+lub
+b) clean and built server i client
