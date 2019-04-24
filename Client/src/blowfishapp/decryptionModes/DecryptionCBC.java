@@ -16,17 +16,12 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
  * @author Magdalena
  */
 public class DecryptionCBC extends Decryption {
-
-    private IvParameterSpec iv;
-    private SecretKeySpec secretKeySpec;
 
     public DecryptionCBC(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         super(fullFileName, outputFileName, keysGenerator);
@@ -57,7 +52,7 @@ public class DecryptionCBC extends Decryption {
     @Override
     public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
-            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);
+            cipher.init(Cipher.DECRYPT_MODE, keySecret, iv);
             byte[] decryptedText = cipher.doFinal(encryptedText);
             return decryptedText;
         } catch (InvalidAlgorithmParameterException ex) {

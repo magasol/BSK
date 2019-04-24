@@ -15,17 +15,12 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
  * @author Magdalena
  */
 public class DecryptionOFB extends Decryption {
-
-    private IvParameterSpec iv;
-    private SecretKeySpec secretKeySpec;
 
     public DecryptionOFB(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         super(fullFileName, outputFileName, keysGenerator);
@@ -41,7 +36,7 @@ public class DecryptionOFB extends Decryption {
 
     public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
-            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);
+            cipher.init(Cipher.DECRYPT_MODE, keySecret, iv);
             byte[] decryptedText = cipher.doFinal(encryptedText);
             return decryptedText;
         } catch (InvalidAlgorithmParameterException ex) {

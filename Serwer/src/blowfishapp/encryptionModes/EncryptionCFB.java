@@ -15,8 +15,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
@@ -46,14 +44,7 @@ public class EncryptionCFB extends Encryption {
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
 
-            byte[] ivBytes = cipher.getIV();
-            if (ivBytes != null) {
-                iv = new IvParameterSpec(ivBytes);
-            }
-
-            byte[] keyBytes = keySecret.getEncoded();
-            secretKeySpec = new SecretKeySpec(keyBytes, "Blowfish");
-
+            this.ivBytes = cipher.getIV();
             System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {

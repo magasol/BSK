@@ -47,13 +47,7 @@ public class EncryptionCBC extends Encryption {
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
 
-            byte[] ivBytes = cipher.getIV();
-            if (ivBytes != null) {
-                iv = new IvParameterSpec(ivBytes);
-            }
-
-            byte[] keyBytes = keySecret.getEncoded();
-            secretKeySpec = new SecretKeySpec(keyBytes, "Blowfish");
+            this.ivBytes = cipher.getIV();
 
             System.out.println("KONIEC");
 

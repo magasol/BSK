@@ -27,14 +27,15 @@ import java.util.logging.Logger;
  */
 public class Server {
 
-    private ObjectOutputStream out;
-    private ObjectInputStream in;
+    
     public ServerSocket serverSocket;
     public byte[] type;
     public byte[] filePath;
+    public Encryption encryption = null;
     private KeysGenerator keysGenerator;
-    Encryption encryption = null;
-
+    private ObjectOutputStream out;
+    private ObjectInputStream in;
+    
 
     public Server(int port, InetAddress serverAddress) {
         try {
@@ -51,48 +52,53 @@ public class Server {
         return serverSocket.getInetAddress().toString();
     }
 
-    public byte[] listen(Socket connection) {
+    public void listen(Socket connection) {
         try {
             this.out = new ObjectOutputStream(connection.getOutputStream());
             this.out.flush();
             this.in = new ObjectInputStream(connection.getInputStream());
-            int len = in.readInt(); 
+            int len = in.readInt();
             byte[] path = new byte[len];
-            if(len > 0){
+            if (len > 0) {
                 in.readFully(path);
             }
             System.out.println("Serwer odebrał ścieżke do pliku: " + new String(path));
             this.filePath = path;
-            
-            len = in.readInt(); 
+
+            len = in.readInt();
             byte[] type = new byte[len];
-            if(len > 0)
-            {
+            if (len > 0) {
                 in.readFully(type);
             }
             System.out.println("Serwer odebrał tryb kodowania: " + new String(type));
             this.type = type;
-            
-            len = in.readInt(); 
 
-            byte[] encryptedText = new byte[len];
+            len = in.readInt();
+
+            byte[] keySecret = new byte[len];
             if (len > 0) {
-                in.readFully(encryptedText);
+                in.readFully(keySecret);
+                generateKeys(keySecret);
             }
+
             //System.out.println("Serwer odebrał: " + new String(encryptedText));
             System.out.println("Serwer odebrał: prosbe o plik");
-            return encryptedText;
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
     }
 
     public void send(int port) {
         try {
-            String pswd = "key";
-            generateKeys(pswd); //jeszcze nie ma przesyalania
-            encrypt(new String(this.type),new File(new String(this.filePath)));
+            encrypt(new String(this.type), new File(new String(this.filePath)));
+            byte[] ivBytes = encryption.getIvBytes();
+            if(ivBytes==null)
+                ivBytes="null".getBytes();
+            this.out.writeInt(ivBytes.length);
+            this.out.write(ivBytes, 0, ivBytes.length);
+            this.out.flush();
+            System.out.println("serwer wysłał wektor");
+
             this.out.writeInt(encryption.encryptedText.length);
             this.out.write(encryption.encryptedText, 0, encryption.encryptedText.length);
             this.out.flush();
@@ -103,10 +109,19 @@ public class Server {
         }
     }
 
+    public void stop() {
+        try {
+            serverSocket.close();
+            this.in.close();
+            this.out.close();
+            System.out.println("Serwer został zamknięty.");
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     private void encrypt(String value, File file) throws IOException {
         if (file != null) {
-            String pswd = "key";
-            generateKeys(pswd);
             switch (value) {
                 case "CBC":
                     System.out.println("tryb szyfrowania cbc");
@@ -135,18 +150,7 @@ public class Server {
         }
     }
 
-    private void generateKeys(String pswd) {
-        this.keysGenerator = new KeysGenerator(pswd);
-    }
-
-    public void stop() {
-        try {
-            serverSocket.close();
-            this.in.close();
-            this.out.close();
-            System.out.println("Serwer został zamknięty.");
-        } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    private void generateKeys(byte[] keySecret) {
+        this.keysGenerator = new KeysGenerator(keySecret);
     }
 }
