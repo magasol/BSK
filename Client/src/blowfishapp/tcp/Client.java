@@ -31,15 +31,15 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class Client extends Task<Void> {
 
-    //final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    //final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
-    final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
+    final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    //final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
+    //final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
     final private int PORT;
     private InetAddress serverAddress;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    boolean flag = true;
+    private boolean flag = true;
     private Decryption decryption;
     private String outputFileName;
     private KeysGenerator keysGenerator;

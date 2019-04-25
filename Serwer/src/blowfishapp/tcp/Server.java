@@ -10,6 +10,9 @@ import blowfishapp.encryptionModes.EncryptionCBC;
 import blowfishapp.encryptionModes.EncryptionCFB;
 import blowfishapp.encryptionModes.EncryptionECB;
 import blowfishapp.encryptionModes.EncryptionOFB;
+import blowfishapp.file.DiskDirectory;
+import blowfishapp.file.DiskElement;
+import blowfishapp.file.MyComparator;
 import blowfishapp.keys.KeysGenerator;
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +39,8 @@ public class Server {
     private KeysGenerator keysGenerator;
     private ObjectOutputStream out;
     private ObjectInputStream in;
+    String path = "C:\\Users\\Aleksandra\\Desktop";
+   // String path = "E:\\semestr 6\\bsk";
     
 
     public Server(int port, InetAddress serverAddress) {
@@ -52,18 +58,39 @@ public class Server {
         return serverSocket.getInetAddress().toString();
     }
 
-    public void listen(Socket connection) {
+    public String chooseFile(String path) {
+        String list = "";
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                throw new Exception("The file does not exist or the path is incorrect.");
+            }
+
+            MyComparator comparator = new MyComparator();
+            DiskDirectory myDiskDirectory = new DiskDirectory(file, 1, comparator);
+            list = myDiskDirectory.print(100);
+            
+            return list;
+            
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+    
+    public void listen(Socket connection, int port) {
         try {
             this.out = new ObjectOutputStream(connection.getOutputStream());
             this.out.flush();
             this.in = new ObjectInputStream(connection.getInputStream());
             int len = in.readInt();
-            byte[] path = new byte[len];
+            byte[] pathF = new byte[len];
             if (len > 0) {
-                in.readFully(path);
+                in.readFully(pathF);
             }
-            System.out.println("Serwer odebrał ścieżke do pliku: " + new String(path));
-            this.filePath = path;
+            System.out.println("Serwer odebrał ścieżke do pliku: " + new String(pathF));
+            String tmp = path + "\\" + new String(pathF);
+            this.filePath = tmp.getBytes();
 
             len = in.readInt();
             byte[] type = new byte[len];
@@ -83,6 +110,28 @@ public class Server {
 
             //System.out.println("Serwer odebrał: " + new String(encryptedText));
             System.out.println("Serwer odebrał: prosbe o plik");
+            
+            send(port);
+            
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void listenFiles(Socket connection, int port) {
+        try {
+            this.out = new ObjectOutputStream(connection.getOutputStream());
+            this.out.flush();
+            this.in = new ObjectInputStream(connection.getInputStream());
+            int len = in.readInt();
+            byte[] request = new byte[len];
+            if (len > 0) {
+                in.readFully(request);
+            }
+            System.out.println("Serwer odebrał prosbe o wyswietlenie listy plikow");
+            
+            filesList();
+            
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -107,6 +156,17 @@ public class Server {
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void filesList() throws IOException
+    {
+        String files = chooseFile(path);
+        
+        byte[] bList = files.getBytes();
+        this.out.writeInt(bList.length);
+        this.out.write(bList, 0, bList.length);
+        this.out.flush();
+        System.out.println("serwer wysłał liste plikow");
     }
 
     public void stop() {
