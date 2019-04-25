@@ -5,6 +5,8 @@
  */
 package blowfishapp;
 
+import blowfishapp.file.DiskDirectory;
+import blowfishapp.file.MyComparator;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -37,7 +39,8 @@ public class BlowFishApp extends Application {
     String address = "127.0.0.3";
     Server server;
     boolean flag = true;
-
+    private String list = "";
+    
     @Override
     public void start(Stage primaryStage) {
 
@@ -52,19 +55,6 @@ public class BlowFishApp extends Application {
                 new LinkedBlockingQueue<>() //kolejka zadań
         );
 
-        Button sendButton = new Button();
-        sendButton.setText("Send");
-        sendButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                try {
-                    server.send(port);
-                } catch (Exception ex) {
-                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-
         Button startServerButton = new Button();
         startServerButton.setText("Start server");
         startServerButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -73,15 +63,37 @@ public class BlowFishApp extends Application {
                 try {
                     InetAddress serverAddress = InetAddress.getByName(address);
                     server = new Server(port, serverAddress);
-                    System.out.println(server.getAddress());
+                    System.out.println(server.getAddress());                  
                 } catch (IOException ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
+        
+        Button fileButton = new Button();
+        fileButton.setText("Send files");
+        fileButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                
+                while (flag) {
+                    final Socket connection;
+                    try {
+                        connection = server.serverSocket.accept();
+                        executor.submit(() -> {
+                            server.listenFiles(connection, port);
+                        });
+                        flag = false;
+                    } catch (IOException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                flag = true;
+            }
+        });
 
         Button receiveServerButton = new Button();
-        receiveServerButton.setText("Receive");
+        receiveServerButton.setText("Do work");
         receiveServerButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -90,7 +102,7 @@ public class BlowFishApp extends Application {
                     try {
                         connection = server.serverSocket.accept();
                         executor.submit(() -> {
-                            server.listen(connection);
+                            server.listen(connection, port);
                         });
                         flag = false;
                     } catch (IOException ex) {
@@ -117,9 +129,9 @@ public class BlowFishApp extends Application {
         gridPane.setVgap(10);
         gridPane.setPadding(new Insets(10, 10, 10, 10));
         gridPane.add(startServerButton, 0, 0);
-        gridPane.add(sendButton, 0, 3);
         gridPane.add(stopServerButton, 1, 0);
-        gridPane.add(receiveServerButton, 1, 3);
+        gridPane.add(fileButton, 0, 1);
+        gridPane.add(receiveServerButton, 1, 1);
 
         Scene scene = new Scene(gridPane, 400, 350);
 

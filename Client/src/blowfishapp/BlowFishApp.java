@@ -29,6 +29,11 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.scene.control.ChoiceBox;
 import blowfishapp.file.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  *
@@ -39,30 +44,16 @@ public class BlowFishApp extends Application {
     Decryption encryption = null;
     String address = "127.0.0.3";
     int port = 9999;
-    //String path = "C:\\Users\\Aleksandra\\Desktop";
-    String path = "E:\\semestr 6\\bsk";
-    public void chooseFile(String path) {
-        try {
-            File file = new File(path);
-            if (!file.exists()) {
-                throw new Exception("The file does not exist or the path is incorrect.");
-            }
-
-            MyComparator comparator = new MyComparator();
-            DiskDirectory myDiskDirectory = new DiskDirectory(file, 1, comparator);
-            myDiskDirectory.print(100);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
+    private String fileList;
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws UnknownHostException {
         Text encryptionTypeText = new Text("Tryb szyfrowania");
         Text outputFileNameText = new Text("Plik wyjściowy");
         TextField outputFileNameTextField = new TextField("Nazwa");
         Text inputFileNameText = new Text("Plik wejściowy");
         TextField inputFileNameTextField = new TextField("Nazwa");
+        Text filesListText = new Text("Pliki do wyboru:");
 
         ObservableList<String> names = FXCollections.observableArrayList(
                 "ECB", "CBC", "CFB", "OFB", "NONE");
@@ -70,13 +61,18 @@ public class BlowFishApp extends Application {
 
         Text pswdText = new Text("Hasło");
         PasswordField pswdField = new PasswordField();
+        
+        InetAddress serverAddress = InetAddress.getByName(address);
+        FileRequest request = new FileRequest(serverAddress, port);
 
         Button chooseButton = new Button();
         chooseButton.setText("Choose File");
         chooseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                chooseFile(path);
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Task<Void> task = request;
+                executor.submit(task);
             }
         });
 
@@ -90,16 +86,29 @@ public class BlowFishApp extends Application {
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
-
-                    String file = path + "\\" + inputFileNameTextField.getText();
                     Task<Void> task = new Client(serverAddress, port,
-                            encryptionChoiceBox.getValue().getBytes(), file.getBytes(),
+                            encryptionChoiceBox.getValue().getBytes(), inputFileNameTextField.getText().getBytes(),
                             outputFileNameTextField.getText(), pswdField.getText());
 
                     executor.submit(task);
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            }
+        });
+        
+        Button updateButton = new Button();
+        updateButton.setText("Update");
+        updateButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+
+                char c;
+                char previousC = ' ';
+                int number = 0; 
+                fileList = request.files;
+                    
+                filesListText.setText(filesListText.getText() + "\n\n" + fileList);
             }
         });
 
@@ -118,6 +127,8 @@ public class BlowFishApp extends Application {
         gridPane.add(pswdText, 0, 5);
         gridPane.add(pswdField, 1, 5);
         gridPane.add(sendButton, 0, 6);
+        gridPane.add(updateButton, 0, 7);
+        gridPane.add(filesListText, 0, 8);
 
         Scene scene = new Scene(gridPane, 400, 350);
 
