@@ -36,6 +36,10 @@ public final class KeysGenerator {
         createSessionKey();
     }
 
+    public KeysGenerator(byte[] keySecretBytes) {
+        this.keySecret = new SecretKeySpec(keySecretBytes, "Blowfish");
+    }
+
     byte[] createPswdShortcut(String pswd) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -58,7 +62,7 @@ public final class KeysGenerator {
             PublicKey publicKey = keypair.getPublic();
 
             SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(pswd);
-            EncryptionCBC encryption = new EncryptionCBC(null,this);
+            EncryptionCBC encryption = new EncryptionCBC(null, this);
             byte[] privateKeyBytes = encryption.encryptText(privateKey.getEncoded(), secretKeySpec);
             //System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             //System.out.println(new String(publicKey.getEncoded()));

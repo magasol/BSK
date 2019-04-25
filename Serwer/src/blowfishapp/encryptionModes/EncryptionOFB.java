@@ -7,7 +7,6 @@ package blowfishapp.encryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -16,8 +15,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
@@ -47,13 +44,7 @@ public class EncryptionOFB extends Encryption {
             byte[] cipherText = cipher.doFinal(fileText);
             this.encryptedText = cipherText;
 
-            byte[] ivBytes = cipher.getIV();
-            if (ivBytes != null) {
-                iv = new IvParameterSpec(ivBytes);
-            }
-
-            byte[] keyBytes = keySecret.getEncoded();
-            secretKeySpec = new SecretKeySpec(keyBytes, "Blowfish");
+            this.ivBytes = cipher.getIV();
 
             System.out.println("KONIEC");
 
@@ -64,16 +55,5 @@ public class EncryptionOFB extends Encryption {
         } catch (BadPaddingException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        try {
-            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, iv);
-            byte[] decryptedText = cipher.doFinal(encryptedText);
-            return decryptedText;
-        } catch (InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
     }
 }

@@ -18,6 +18,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 /**
  *
@@ -25,11 +26,11 @@ import javax.crypto.SecretKey;
  */
 public class Decryption {
 
+    public byte[] encryptedText;
     protected String outputFileName;
     protected SecretKey keySecret;
     protected Cipher cipher;
-    protected String pswd;
-    public byte[] encryptedText;
+    protected IvParameterSpec iv;
 
     public Decryption(byte[] encryptedText, String outputFileName, KeysGenerator keysGenerator) {
         try {
@@ -60,5 +61,9 @@ public class Decryption {
         byte[] decryptedText = cipher.doFinal(encryptedText);
         return decryptedText;
 
+    }
+
+    public void setIvParameterSpec(byte[] ivBytes) {
+        iv = new IvParameterSpec(ivBytes);
     }
 }

@@ -52,11 +52,4 @@ public class EncryptionECB extends Encryption {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        cipher.init(Cipher.DECRYPT_MODE, keySecret);
-        byte[] decryptedText = cipher.doFinal(encryptedText);
-        return decryptedText;
-
-    }
 }

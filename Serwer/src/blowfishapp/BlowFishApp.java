@@ -10,17 +10,13 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import blowfishapp.tcp.*;
 import java.net.InetAddress;
@@ -56,31 +52,13 @@ public class BlowFishApp extends Application {
                 new LinkedBlockingQueue<>() //kolejka zadań
         );
 
-        ObservableList<String> names = FXCollections.observableArrayList(
-                "ECB", "CBC", "CFB", "OFB", "NONE");
-        ChoiceBox<String> encryptionChoiceBox = new ChoiceBox<>(names);
-
-        final FileChooser fileChooser = new FileChooser();
-
-        final Button chooseFileButton = new Button("Wybierz plik");
-
-        chooseFileButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(final ActionEvent e) {
-                file = fileChooser.showOpenDialog(primaryStage);
-                if (file != null) {
-                    inputFileNameText.setText(file.getName());
-                }
-            }
-        });
-
         Button sendButton = new Button();
         sendButton.setText("Send");
         sendButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                    server.send(port, encryptionChoiceBox.getValue(), file);
+                    server.send(port);
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -138,11 +116,6 @@ public class BlowFishApp extends Application {
         gridPane.setHgap(10);
         gridPane.setVgap(10);
         gridPane.setPadding(new Insets(10, 10, 10, 10));
-
-        gridPane.add(encryptionTypeText, 0, 1);
-        gridPane.add(encryptionChoiceBox, 1, 1);
-        gridPane.add(chooseFileButton, 0, 2);
-        gridPane.add(inputFileNameText, 1, 2);
         gridPane.add(startServerButton, 0, 0);
         gridPane.add(sendButton, 0, 3);
         gridPane.add(stopServerButton, 1, 0);
