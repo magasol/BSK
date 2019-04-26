@@ -20,21 +20,21 @@ import javafx.concurrent.Task;
  */
 public class FileRequest extends Task<Void> {
 
-    private ObjectOutputStream  out;
+    private ObjectOutputStream out;
     private int PORT;
     private InetAddress serverAddress;
     public String files;
-    
+
     public FileRequest(InetAddress serverAddress, int serverPort) {
         this.PORT = serverPort;
         this.serverAddress = serverAddress;
     }
-    
+
     @Override
     protected Void call() throws Exception {
-        
-        byte[] text = "Prosba o pliki".getBytes();
-        
+
+        byte[] text = "list".getBytes();
+
         Socket socket = new Socket(serverAddress, PORT);
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.out.flush();
@@ -43,7 +43,7 @@ public class FileRequest extends Task<Void> {
             if (!socket.isConnected()) {
                 System.out.println("Aplikacja nie połączyła się z serwerem");
             }
-
+            
             this.out.writeInt(text.length);
             this.out.write(text, 0, text.length);
             this.out.flush();
@@ -55,9 +55,8 @@ public class FileRequest extends Task<Void> {
         }
         return null;
     }
-    
-    public void receiveFiles(Socket socket) throws IOException
-    {
+
+    public void receiveFiles(Socket socket) throws IOException {
         boolean flag = true;
         byte[] files = null;
         this.out = new ObjectOutputStream(socket.getOutputStream());
@@ -69,7 +68,7 @@ public class FileRequest extends Task<Void> {
         while (flag) {
             try {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                
+
                 int len = in.readInt();
                 files = new byte[len];
                 if (len > 0) {
@@ -86,5 +85,4 @@ public class FileRequest extends Task<Void> {
         flag = true;
         this.files = new String(files);
     }
-    
 }

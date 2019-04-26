@@ -31,10 +31,10 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class Client extends Task<Void> {
 
-    final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    //final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
-    //final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
+    //final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    //final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
+    final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
     final private int PORT;
     private InetAddress serverAddress;
     private ObjectOutputStream out;
@@ -46,6 +46,7 @@ public class Client extends Task<Void> {
     private String pswd;
     private byte[] type;
     private byte[] path;
+    private Socket socket;
 
     public Client(InetAddress serverAddress, int serverPort,
             byte[] mode, byte[] fullFileName, String outputFile, String pswd) {
@@ -60,7 +61,7 @@ public class Client extends Task<Void> {
     @Override
     protected Void call() throws Exception {
 
-        Socket socket = new Socket(serverAddress, PORT);
+        socket = new Socket(serverAddress, PORT);
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.out.flush();
 
@@ -69,6 +70,10 @@ public class Client extends Task<Void> {
                 System.out.println("Aplikacja nie połączyła się z serwerem");
             }
             generateKeys(pswd);
+            byte[] request = "file".getBytes();
+            this.out.writeInt(request.length);
+            this.out.write(request, 0, request.length);
+            this.out.flush();
 
             this.out.writeInt(path.length);
             this.out.write(path, 0, path.length);
@@ -117,6 +122,7 @@ public class Client extends Task<Void> {
                     flag = false;
                 }
                 System.out.println("KONIEC");
+                stop();
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -150,8 +156,9 @@ public class Client extends Task<Void> {
                         decryption = new Decryption(encryptedText, outputFileName, this.keysGenerator);
                         System.out.println("brak trybu szyfrowania");
                 }
-                if(new String(ivBytes) == "null")
+                if ("null".equals(new String(ivBytes))) {
                     ivBytes = null;
+                }
                 decryption.setIvParameterSpec(ivBytes);
                 decryption.writeFile(outputPathEncrypted, encryptedText);
                 byte[] decryptedText = decryption.decryptText(encryptedText);
@@ -172,5 +179,12 @@ public class Client extends Task<Void> {
 
     private void generateKeys(String pswd) {
         this.keysGenerator = new KeysGenerator(pswd);
+    }
+
+    private void stop() throws IOException {
+        socket.close();
+        in.close();
+        out.close();
+        System.out.println("Klient został zamknięty.");
     }
 }

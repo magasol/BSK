@@ -11,7 +11,6 @@ import blowfishapp.encryptionModes.EncryptionCFB;
 import blowfishapp.encryptionModes.EncryptionECB;
 import blowfishapp.encryptionModes.EncryptionOFB;
 import blowfishapp.file.DiskDirectory;
-import blowfishapp.file.DiskElement;
 import blowfishapp.file.MyComparator;
 import blowfishapp.keys.KeysGenerator;
 import java.io.File;
@@ -21,7 +20,6 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +29,6 @@ import java.util.logging.Logger;
  */
 public class Server {
 
-    
     public ServerSocket serverSocket;
     public byte[] type;
     public byte[] filePath;
@@ -39,9 +36,8 @@ public class Server {
     private KeysGenerator keysGenerator;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    String path = "C:\\Users\\Aleksandra\\Desktop";
-   // String path = "E:\\semestr 6\\bsk";
-    
+    //String path = "C:\\Users\\Aleksandra\\Desktop";
+    String path = "E:\\semestr 6\\bsk\\test";
 
     public Server(int port, InetAddress serverAddress) {
         try {
@@ -58,31 +54,35 @@ public class Server {
         return serverSocket.getInetAddress().toString();
     }
 
-    public String chooseFile(String path) {
-        String list = "";
-        try {
-            File file = new File(path);
-            if (!file.exists()) {
-                throw new Exception("The file does not exist or the path is incorrect.");
-            }
+    public void listen(int port) {
 
-            MyComparator comparator = new MyComparator();
-            DiskDirectory myDiskDirectory = new DiskDirectory(file, 1, comparator);
-            list = myDiskDirectory.print(100);
-            
-            return list;
-            
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        return null;
-    }
-    
-    public void listen(Socket connection, int port) {
         try {
-            this.out = new ObjectOutputStream(connection.getOutputStream());
-            this.out.flush();
-            this.in = new ObjectInputStream(connection.getInputStream());
+            while (!serverSocket.isClosed()) {
+                final Socket connection = this.serverSocket.accept();
+                this.out = new ObjectOutputStream(connection.getOutputStream());
+                this.out.flush();
+                this.in = new ObjectInputStream(connection.getInputStream());
+
+                int len = in.readInt();
+                byte[] requestFor = new byte[len];
+                if (len > 0) {
+                    in.readFully(requestFor);
+                }
+
+                if ("file".equals(new String(requestFor))) {
+                    manageSendingEncryptedFile(port);
+                } else if ("list".equals(new String(requestFor))) {
+                    manageFilesListRequest(port);
+                }
+            }
+        } catch (IOException ex) {
+            System.out.println("Server socket jest zamknięty.");
+        }
+
+    }
+
+    private void manageSendingEncryptedFile(int port) {
+        try {
             int len = in.readInt();
             byte[] pathF = new byte[len];
             if (len > 0) {
@@ -110,28 +110,8 @@ public class Server {
 
             //System.out.println("Serwer odebrał: " + new String(encryptedText));
             System.out.println("Serwer odebrał: prosbe o plik");
-            
+
             send(port);
-            
-        } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public void listenFiles(Socket connection, int port) {
-        try {
-            this.out = new ObjectOutputStream(connection.getOutputStream());
-            this.out.flush();
-            this.in = new ObjectInputStream(connection.getInputStream());
-            int len = in.readInt();
-            byte[] request = new byte[len];
-            if (len > 0) {
-                in.readFully(request);
-            }
-            System.out.println("Serwer odebrał prosbe o wyswietlenie listy plikow");
-            
-            filesList();
-            
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -141,8 +121,9 @@ public class Server {
         try {
             encrypt(new String(this.type), new File(new String(this.filePath)));
             byte[] ivBytes = encryption.getIvBytes();
-            if(ivBytes==null)
-                ivBytes="null".getBytes();
+            if (ivBytes == null) {
+                ivBytes = "null".getBytes();
+            }
             this.out.writeInt(ivBytes.length);
             this.out.write(ivBytes, 0, ivBytes.length);
             this.out.flush();
@@ -151,30 +132,9 @@ public class Server {
             this.out.writeInt(encryption.encryptedText.length);
             this.out.write(encryption.encryptedText, 0, encryption.encryptedText.length);
             this.out.flush();
+
             //System.out.println("serwer wysłał " + new String(encryptedText));
             System.out.println("serwer wysłał plik");
-        } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public void filesList() throws IOException
-    {
-        String files = chooseFile(path);
-        
-        byte[] bList = files.getBytes();
-        this.out.writeInt(bList.length);
-        this.out.write(bList, 0, bList.length);
-        this.out.flush();
-        System.out.println("serwer wysłał liste plikow");
-    }
-
-    public void stop() {
-        try {
-            serverSocket.close();
-            this.in.close();
-            this.out.close();
-            System.out.println("Serwer został zamknięty.");
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -212,5 +172,64 @@ public class Server {
 
     private void generateKeys(byte[] keySecret) {
         this.keysGenerator = new KeysGenerator(keySecret);
+    }
+
+    private void manageFilesListRequest(int port) {
+        try {
+            System.out.println("Serwer odebrał prosbe o wyswietlenie listy plikow");
+            sendFilesList();
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void sendFilesList() throws IOException {
+        String files = chooseFile(path);
+
+        byte[] bList = files.getBytes();
+        this.out.writeInt(bList.length);
+        this.out.write(bList, 0, bList.length);
+        this.out.flush();
+
+        System.out.println("serwer wysłał liste plikow");
+    }
+
+    public String chooseFile(String path) {
+        String list = "";
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                throw new Exception("The file does not exist or the path is incorrect.");
+            }
+
+            MyComparator comparator = new MyComparator();
+            DiskDirectory myDiskDirectory = new DiskDirectory(file, 1, comparator);
+            list = myDiskDirectory.print(100);
+
+            return list;
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
+
+    public void stop() {
+        try {
+            if (!serverSocket.isClosed()) {
+                if (this.in != null) {
+                    this.in.close();
+                }
+                if (this.out != null) {
+                    this.out.close();
+                }
+
+                serverSocket.close();
+                System.out.println("Serwer został zamknięty.");
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class
+                    .getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
