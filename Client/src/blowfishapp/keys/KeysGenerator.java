@@ -25,6 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,7 +62,7 @@ public final class KeysGenerator {
 
             SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
             DecryptionCBC encryption = new DecryptionCBC(null, null, this);
-            byte[] privateKeyBytes = encryption.encryptKey(privateKey.getEncoded(), secretKeySpec);
+            //byte[] privateKeyBytes = encryption.encryptKey(privateKey.getEncoded(), secretKeySpec);
 
             //System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             //System.out.println(new String(publicKey.getEncoded()));
@@ -71,7 +72,8 @@ public final class KeysGenerator {
             if (!new File(publicFolderName).exists()) {
                 new File(publicFolderName).mkdir();
             }
-            writeFile("private", privateKeyBytes);
+            //writeFile("private", privateKeyBytes);
+            writeFile("private", privateKey.getEncoded());
             writeFile("public", publicKey.getEncoded());
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
@@ -83,7 +85,8 @@ public final class KeysGenerator {
     private SecretKeySpec createKeyForRSAPrivateKeyEncryption(byte[] key) {
         return new SecretKeySpec(key, "Blowfish");
     }
-        byte[] createPswdShortcut(String pswd) {
+
+    byte[] createPswdShortcut(String pswd) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
@@ -94,7 +97,7 @@ public final class KeysGenerator {
         }
         return null;
     }
-    
+
     public void writeFile(String path, byte[] text) throws FileNotFoundException {
         try {
             FileOutputStream outputStream
@@ -111,8 +114,8 @@ public final class KeysGenerator {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            byte[] encryptedKeyBytes = cipher.doFinal(this.keySecret.getEncoded());
-            this.keySecret = new SecretKeySpec(encryptedKeyBytes, "Blowfish");
+            byte[] decryptedSecretKeyBytes = cipher.doFinal(encryptedSecretKey);
+            this.keySecret = new SecretKeySpec(decryptedSecretKeyBytes, "Blowfish");
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
@@ -129,23 +132,25 @@ public final class KeysGenerator {
     private PrivateKey decryptPrivateKey(String pswd) {
         try {
             byte[] privateKeyBytes = readPrivateKey();
-            SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
-            DecryptionCBC keyDecryption = new DecryptionCBC(null, null, this);
-            byte[] decryptedPrivateKeyBytes = keyDecryption.decryptKey(privateKeyBytes, secretKeySpec);
+            //SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
+            //DecryptionCBC keyDecryption = new DecryptionCBC(null, null, this);
+            //byte[] decryptedPrivateKeyBytes = keyDecryption.decryptKey(privateKeyBytes, secretKeySpec);
+            //return KeyFactory.getInstance("RSA")
+            //.generatePrivate(new X509EncodedKeySpec(decryptedPrivateKeyBytes));
             return KeyFactory.getInstance("RSA")
-                    .generatePrivate(new X509EncodedKeySpec(decryptedPrivateKeyBytes));
+                    .generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeyException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalBlockSizeException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BadPaddingException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (NoSuchPaddingException ex) {
+//            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (InvalidKeyException ex) {
+//            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (IllegalBlockSizeException ex) {
+//            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (BadPaddingException ex) {
+//            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
