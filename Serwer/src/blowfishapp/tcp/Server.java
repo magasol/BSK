@@ -33,6 +33,7 @@ public class Server {
     public byte[] type;
     public byte[] filePath;
     public Encryption encryption = null;
+    private byte[] publicKey;
     private KeysGenerator keysGenerator;
     private ObjectOutputStream out;
     private ObjectInputStream in;
@@ -102,14 +103,13 @@ public class Server {
 
             len = in.readInt();
 
-            byte[] keySecret = new byte[len];
+            byte[] publicKey = new byte[len];
             if (len > 0) {
-                in.readFully(keySecret);
-                generateKeys(keySecret);
+                in.readFully(publicKey);
+                this.publicKey = publicKey;
             }
-
-            //System.out.println("Serwer odebrał: " + new String(encryptedText));
-            System.out.println("Serwer odebrał: prosbe o plik");
+            //System.out.println("Serwer odebrał: " + new String(publicKey));
+            System.out.println("Serwer odebrał: klucz publiczny");
 
             send(port);
         } catch (IOException ex) {
@@ -119,7 +119,12 @@ public class Server {
 
     public void send(int port) {
         try {
-            encrypt(new String(this.type), new File(new String(this.filePath)));
+            this.keysGenerator = new KeysGenerator();
+
+            File file = new File(new String(this.filePath));
+            encrypt(new String(this.type), file);
+            this.keysGenerator.encryptSessionKey(this.publicKey);
+
             byte[] ivBytes = encryption.getIvBytes();
             if (ivBytes == null) {
                 ivBytes = "null".getBytes();
@@ -129,10 +134,15 @@ public class Server {
             this.out.flush();
             System.out.println("serwer wysłał wektor");
 
+            byte[] keySecretBytes = this.keysGenerator.getKeySecret().getEncoded();
+            this.out.writeInt(keySecretBytes.length);
+            this.out.write(keySecretBytes, 0, keySecretBytes.length);
+            this.out.flush();
+            System.out.println("serwer wysłał zaszyfrowany klucz sesyjny");
+
             this.out.writeInt(encryption.encryptedText.length);
             this.out.write(encryption.encryptedText, 0, encryption.encryptedText.length);
             this.out.flush();
-
             //System.out.println("serwer wysłał " + new String(encryptedText));
             System.out.println("serwer wysłał plik");
         } catch (IOException ex) {

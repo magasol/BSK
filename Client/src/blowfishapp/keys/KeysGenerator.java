@@ -16,16 +16,22 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.crypto.KeyGenerator;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -35,24 +41,13 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public final class KeysGenerator {
 
-    private byte[] pswdShortcut;
     private SecretKey keySecret;
+    final private String privateFolderName = ".\\private";
+    final private String publicFolderName = ".\\public";
+    final private String fileName = "key";
 
     public KeysGenerator(String pswd) {
         createRSAKeys(pswd);
-        createSessionKey();
-    }
-
-    byte[] createPswdShortcut(String pswd) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            this.pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
-            //System.out.println("Skrót hasła: " + new String(this.pswdShortcut));
-            return this.pswdShortcut;
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
     }
 
     public void createRSAKeys(String pswd) {
@@ -64,17 +59,17 @@ public final class KeysGenerator {
             PrivateKey privateKey = keypair.getPrivate();
             PublicKey publicKey = keypair.getPublic();
 
-            SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(pswd);
+            SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
             DecryptionCBC encryption = new DecryptionCBC(null, null, this);
-            byte[] privateKeyBytes = encryption.encryptText(privateKey.getEncoded(), secretKeySpec);
+            byte[] privateKeyBytes = encryption.encryptKey(privateKey.getEncoded(), secretKeySpec);
 
             //System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             //System.out.println(new String(publicKey.getEncoded()));
-            if (!new File(".\\private").exists()) {
-                new File(".\\private").mkdir();
+            if (!new File(privateFolderName).exists()) {
+                new File(privateFolderName).mkdir();
             }
-            if (!new File(".\\public").exists()) {
-                new File(".\\public").mkdir();
+            if (!new File(publicFolderName).exists()) {
+                new File(publicFolderName).mkdir();
             }
             writeFile("private", privateKeyBytes);
             writeFile("public", publicKey.getEncoded());
@@ -85,29 +80,25 @@ public final class KeysGenerator {
         }
     }
 
-    private SecretKeySpec createKeyForRSAPrivateKeyEncryption(String key) {
-        byte[] keyData = key.getBytes();
-        return new SecretKeySpec(keyData, "Blowfish");
+    private SecretKeySpec createKeyForRSAPrivateKeyEncryption(byte[] key) {
+        return new SecretKeySpec(key, "Blowfish");
     }
-
-    public void createSessionKey() {
+        byte[] createPswdShortcut(String pswd) {
         try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("Blowfish");
-            keyGenerator.init(128, new SecureRandom());
-            this.keySecret = keyGenerator.generateKey();
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
+            //System.out.println("Skrót hasła: " + new String(pswdShortcut));
+            return pswdShortcut;
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return null;
     }
-
-    public SecretKey getKeySecret() {
-        return keySecret;
-    }
-
+    
     public void writeFile(String path, byte[] text) throws FileNotFoundException {
         try {
             FileOutputStream outputStream
-                    = new FileOutputStream(path + "\\" + "key");
+                    = new FileOutputStream(path + "\\" + fileName);
             outputStream.write(text);
             outputStream.close();
         } catch (IOException ex) {
@@ -115,8 +106,75 @@ public final class KeysGenerator {
         }
     }
 
+    public void decryptSecretKey(byte[] encryptedSecretKey, String pswd) {
+        PrivateKey privateKey = decryptPrivateKey(pswd);
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            byte[] encryptedKeyBytes = cipher.doFinal(this.keySecret.getEncoded());
+            this.keySecret = new SecretKeySpec(encryptedKeyBytes, "Blowfish");
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private PrivateKey decryptPrivateKey(String pswd) {
+        try {
+            byte[] privateKeyBytes = readPrivateKey();
+            SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
+            DecryptionCBC keyDecryption = new DecryptionCBC(null, null, this);
+            byte[] decryptedPrivateKeyBytes = keyDecryption.decryptKey(privateKeyBytes, secretKeySpec);
+            return KeyFactory.getInstance("RSA")
+                    .generatePrivate(new X509EncodedKeySpec(decryptedPrivateKeyBytes));
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public byte[] readPublicKey() {
+        try {
+            return readFile(publicFolderName + "\\" + fileName);
+        } catch (IOException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public byte[] readPrivateKey() {
+        try {
+            return readFile(privateFolderName + "\\" + fileName);
+        } catch (IOException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
     public byte[] readFile(String fullFileName) throws FileNotFoundException, IOException {
         Path path = Paths.get(fullFileName);
         return Files.readAllBytes(path);
     }
+
+    public SecretKey getKeySecret() {
+        return keySecret;
+    }
+
 }
