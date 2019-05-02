@@ -6,6 +6,7 @@
 package blowfishapp.decryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -32,6 +33,18 @@ public class DecryptionCBC extends Decryption {
         } catch (NoSuchPaddingException ex) {
             Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    @Override
+    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, keySecret, iv);
+            byte[] decryptedText = cipher.doFinal(encryptedText);
+            return decryptedText;
+        } catch (InvalidAlgorithmParameterException ex) {
+            Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public byte[] encryptKey(byte[] text, SecretKey key) {
