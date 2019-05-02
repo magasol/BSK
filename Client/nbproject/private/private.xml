@@ -3,6 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/E:/semestr%206/bsk/BlowFish/Client/src/blowfishapp/keys/KeysGenerator.java</file>
+            <file>file:/E:/semestr%206/bsk/BlowFish/Client/src/blowfishapp/decryptionModes/Decryption.java</file>
+            <file>file:/E:/semestr%206/bsk/BlowFish/Client/src/blowfishapp/decryptionModes/DecryptionCBC.java</file>
             <file>file:/E:/semestr%206/bsk/BlowFish/Client/src/blowfishapp/tcp/Client.java</file>
         </group>
     </open-files>

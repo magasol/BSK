@@ -167,10 +167,10 @@ public class Client extends Task<Void> {
                         decryption = new Decryption(encryptedText, outputFileName, this.keysGenerator);
                         System.out.println("brak trybu szyfrowania");
                 }
-                if ("null".equals(new String(ivBytes))) {
-                    ivBytes = null;
+                if (!"ecb".equals(new String(type))) {
+                    decryption.setIvParameterSpec(ivBytes);
                 }
-                decryption.setIvParameterSpec(ivBytes);
+                
                 decryption.writeFile(outputPathEncrypted, encryptedText);
                 byte[] decryptedText = decryption.decryptText(encryptedText);
                 decryption.writeFile(outputPathDecrypted, decryptedText);
