@@ -23,6 +23,8 @@ import javax.crypto.SecretKey;
  */
 public class DecryptionCBC extends Decryption {
 
+    private byte[] ivBytes;
+
     public DecryptionCBC(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         super(fullFileName, outputFileName, keysGenerator);
         try {
@@ -35,9 +37,22 @@ public class DecryptionCBC extends Decryption {
         }
     }
 
-    public byte[] encryptText(byte[] text, SecretKey key) {
+    @Override
+    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, keySecret, iv);
+            byte[] decryptedText = cipher.doFinal(encryptedText);
+            return decryptedText;
+        } catch (InvalidAlgorithmParameterException ex) {
+            Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public byte[] encryptKey(byte[] text, SecretKey key) {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, key);
+            this.ivBytes = cipher.getIV();
             return cipher.doFinal(text);
         } catch (InvalidKeyException ex) {
             Logger.getLogger(DecryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
@@ -49,15 +64,7 @@ public class DecryptionCBC extends Decryption {
         return null;
     }
 
-    @Override
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        try {
-            cipher.init(Cipher.DECRYPT_MODE, keySecret, iv);
-            byte[] decryptedText = cipher.doFinal(encryptedText);
-            return decryptedText;
-        } catch (InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    public byte[] getIvBytes() {
+        return this.ivBytes;
     }
 }

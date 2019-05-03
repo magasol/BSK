@@ -85,11 +85,11 @@ public class Client extends Task<Void> {
             this.out.flush();
             System.out.println("Aplikacja wysłała tryb kodowania: " + new String(type));
 
-            byte[] keySecretBytes = this.keysGenerator.getKeySecret().getEncoded();
+            byte[] keySecretBytes = this.keysGenerator.readPublicKey();
             this.out.writeInt(keySecretBytes.length);
             this.out.write(keySecretBytes, 0, keySecretBytes.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała klucz");
+            System.out.println("Aplikacja wysłała klucz publiczny");
 
             receive(socket);
         } catch (IOException ex) {
@@ -109,7 +109,15 @@ public class Client extends Task<Void> {
                     in.readFully(iv);
                     System.out.println("Aplikacja odebrała: iv od serwera");
                     flag = false;
+                }
 
+                len = in.readInt();
+                byte[] encryptedSessionKeyBytes = new byte[len];
+                if (len > 0) {
+                    in.readFully(encryptedSessionKeyBytes);
+                    //System.out.println("Aplikacja odebrała: " + new String(encryptedSessionKeyBytes));
+                    System.out.println("Aplikacja odebrała: zaszyfrowany klucz sesyjny od serwera");
+                    flag = false;
                 }
 
                 len = in.readInt();
@@ -118,9 +126,12 @@ public class Client extends Task<Void> {
                     in.readFully(encryptedText);
                     //System.out.println("Aplikacja odebrała: " + new String(encryptedText));
                     System.out.println("Aplikacja odebrała: plik od serwera");
-                    decrypt(encryptedText, iv);
                     flag = false;
                 }
+                
+                this.keysGenerator.decryptSecretKey(encryptedSessionKeyBytes, pswd);
+                decrypt(encryptedText, iv);
+                
                 System.out.println("KONIEC");
                 stop();
             } catch (IOException ex) {
@@ -156,10 +167,10 @@ public class Client extends Task<Void> {
                         decryption = new Decryption(encryptedText, outputFileName, this.keysGenerator);
                         System.out.println("brak trybu szyfrowania");
                 }
-                if ("null".equals(new String(ivBytes))) {
-                    ivBytes = null;
+                if (!"ecb".equals(new String(type))) {
+                    decryption.setIvParameterSpec(ivBytes);
                 }
-                decryption.setIvParameterSpec(ivBytes);
+                
                 decryption.writeFile(outputPathEncrypted, encryptedText);
                 byte[] decryptedText = decryption.decryptText(encryptedText);
                 decryption.writeFile(outputPathDecrypted, decryptedText);

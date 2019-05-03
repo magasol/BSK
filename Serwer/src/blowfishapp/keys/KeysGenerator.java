@@ -6,18 +6,19 @@
 package blowfishapp.keys;
 
 import blowfishapp.BlowFishApp;
-import blowfishapp.encryptionModes.EncryptionCBC;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.MessageDigest;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -27,53 +28,14 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public final class KeysGenerator {
 
-    private byte[] pswdShortcut;
-    //do zmiany
     public SecretKey keySecret;
 
-    public KeysGenerator(String pswd) {
-        createRSAKeys(pswd);
+    public KeysGenerator() {
         createSessionKey();
     }
 
     public KeysGenerator(byte[] keySecretBytes) {
         this.keySecret = new SecretKeySpec(keySecretBytes, "Blowfish");
-    }
-
-    byte[] createPswdShortcut(String pswd) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            this.pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
-            //System.out.println("Skrót hasła: " + new String(this.pswdShortcut));
-            return this.pswdShortcut;
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    public void createRSAKeys(String pswd) {
-        try {
-            String algorithm = "RSA"; // or RSA, DH, etc.
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance(algorithm);
-            keyGen.initialize(1024);
-            KeyPair keypair = keyGen.genKeyPair();
-            PrivateKey privateKey = keypair.getPrivate();
-            PublicKey publicKey = keypair.getPublic();
-
-            SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(pswd);
-            EncryptionCBC encryption = new EncryptionCBC(null, this);
-            byte[] privateKeyBytes = encryption.encryptText(privateKey.getEncoded(), secretKeySpec);
-            //System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
-            //System.out.println(new String(publicKey.getEncoded()));
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private SecretKeySpec createKeyForRSAPrivateKeyEncryption(String key) {
-        byte[] keyData = key.getBytes();
-        return new SecretKeySpec(keyData, "Blowfish");
     }
 
     public void createSessionKey() {
@@ -83,6 +45,29 @@ public final class KeysGenerator {
             this.keySecret = keyGenerator.generateKey();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void encryptSessionKey(byte[] publicKeyBytes) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE,
+                    KeyFactory.getInstance("RSA")
+                            .generatePublic(new X509EncodedKeySpec(publicKeyBytes)));
+            byte[] encryptedKeyBytes = cipher.doFinal(this.keySecret.getEncoded());
+            this.keySecret = new SecretKeySpec(encryptedKeyBytes, "Blowfish");
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeySpecException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
