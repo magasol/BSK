@@ -9,6 +9,7 @@ import blowfishapp.keys.KeysGenerator;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -57,10 +58,14 @@ public class Decryption {
     }
 
     public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        cipher.init(Cipher.DECRYPT_MODE, keySecret);
-        byte[] decryptedText = cipher.doFinal(encryptedText);
-        return decryptedText;
-
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, keySecret,iv);
+            byte[] decryptedText = cipher.doFinal(encryptedText);
+            return decryptedText;
+        } catch (InvalidAlgorithmParameterException ex) {
+            Logger.getLogger(Decryption.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public void setIvParameterSpec(byte[] ivBytes) {

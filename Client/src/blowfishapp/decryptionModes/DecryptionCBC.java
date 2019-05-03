@@ -23,6 +23,8 @@ import javax.crypto.SecretKey;
  */
 public class DecryptionCBC extends Decryption {
 
+    private byte[] ivBytes;
+
     public DecryptionCBC(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
         super(fullFileName, outputFileName, keysGenerator);
         try {
@@ -50,6 +52,7 @@ public class DecryptionCBC extends Decryption {
     public byte[] encryptKey(byte[] text, SecretKey key) {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, key);
+            this.ivBytes = cipher.getIV();
             return cipher.doFinal(text);
         } catch (InvalidKeyException ex) {
             Logger.getLogger(DecryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
@@ -61,9 +64,7 @@ public class DecryptionCBC extends Decryption {
         return null;
     }
 
-    public byte[] decryptKey(byte[] encryptedText, SecretKey key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        cipher.init(Cipher.DECRYPT_MODE, key);
-        byte[] decryptedText = cipher.doFinal(encryptedText);
-        return decryptedText;
+    public byte[] getIvBytes() {
+        return this.ivBytes;
     }
 }

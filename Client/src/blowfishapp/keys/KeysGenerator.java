@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -26,7 +27,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -62,7 +62,7 @@ public final class KeysGenerator {
 
             SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
             DecryptionCBC encryption = new DecryptionCBC(null, null, this);
-            //byte[] privateKeyBytes = encryption.encryptKey(privateKey.getEncoded(), secretKeySpec);
+            byte[] privateKeyBytes = encryption.encryptKey(privateKey.getEncoded(), secretKeySpec);
 
             //System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             //System.out.println(new String(publicKey.getEncoded()));
@@ -72,8 +72,11 @@ public final class KeysGenerator {
             if (!new File(publicFolderName).exists()) {
                 new File(publicFolderName).mkdir();
             }
-            //writeFile("private", privateKeyBytes);
-            writeFile("private", privateKey.getEncoded());
+
+            byte[] ivLength = ByteBuffer.allocate(4).putInt(encryption.getIvBytes().length).array();
+
+            writeFile("private", joinByteArrays(ivLength, encryption.getIvBytes(),
+                    privateKeyBytes));
             writeFile("public", publicKey.getEncoded());
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
@@ -96,6 +99,14 @@ public final class KeysGenerator {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    private byte[] joinByteArrays(byte[] one, byte[] two, byte[] three) {
+        byte[] combined = new byte[one.length + two.length + three.length];
+        System.arraycopy(one, 0, combined, 0, one.length);
+        System.arraycopy(two, 0, combined, one.length, two.length);
+        System.arraycopy(three, 0, combined, one.length + two.length, three.length);
+        return combined;
     }
 
     public void writeFile(String path, byte[] text) throws FileNotFoundException {
@@ -131,26 +142,35 @@ public final class KeysGenerator {
 
     private PrivateKey decryptPrivateKey(String pswd) {
         try {
-            byte[] privateKeyBytes = readPrivateKey();
-            //SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
-            //DecryptionCBC keyDecryption = new DecryptionCBC(null, null, this);
-            //byte[] decryptedPrivateKeyBytes = keyDecryption.decryptKey(privateKeyBytes, secretKeySpec);
-            //return KeyFactory.getInstance("RSA")
-            //.generatePrivate(new X509EncodedKeySpec(decryptedPrivateKeyBytes));
+            SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
+            this.keySecret = secretKeySpec;
+            DecryptionCBC keyDecryption = new DecryptionCBC(null, null, this);            
+
+            byte[] privateKeyFileBytes = readPrivateKey();
+            byte[] ivLength = new byte[4];
+            System.arraycopy(privateKeyFileBytes, 0, ivLength, 0, 4);
+            byte[] iv = new byte[ByteBuffer.wrap(ivLength).getInt()];
+            System.arraycopy(privateKeyFileBytes, 4, iv, 0, ByteBuffer.wrap(ivLength).getInt());
+            int keyLength = privateKeyFileBytes.length - (ByteBuffer.wrap(ivLength).getInt() + 4);
+            byte[] privateKeyBytes = new byte[keyLength];
+            System.arraycopy(privateKeyFileBytes, 4 + ByteBuffer.wrap(ivLength).getInt(), privateKeyBytes, 0, keyLength);
+
+            keyDecryption.setIvParameterSpec(iv);
+            byte[] decryptedPrivateKeyBytes = keyDecryption.decryptText(privateKeyBytes);
             return KeyFactory.getInstance("RSA")
-                    .generatePrivate(new PKCS8EncodedKeySpec(privateKeyBytes));
+                    .generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidKeySpecException ex) {
             Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (NoSuchPaddingException ex) {
-//            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (InvalidKeyException ex) {
-//            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (IllegalBlockSizeException ex) {
-//            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-//        } catch (BadPaddingException ex) {
-//            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchPaddingException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvalidKeyException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalBlockSizeException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (BadPaddingException ex) {
+            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
@@ -181,5 +201,4 @@ public final class KeysGenerator {
     public SecretKey getKeySecret() {
         return keySecret;
     }
-
 }

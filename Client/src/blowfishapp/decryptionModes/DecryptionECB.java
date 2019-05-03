@@ -36,6 +36,5 @@ public class DecryptionECB extends Decryption {
         cipher.init(Cipher.DECRYPT_MODE, keySecret);
         byte[] decryptedText = cipher.doFinal(encryptedText);
         return decryptedText;
-
     }
 }
