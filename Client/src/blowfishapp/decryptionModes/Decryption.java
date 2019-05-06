@@ -18,7 +18,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 /**
@@ -28,17 +27,15 @@ import javax.crypto.spec.IvParameterSpec;
 public class Decryption {
 
     public byte[] encryptedText;
-    protected String outputFileName;
-    protected SecretKey keySecret;
+    public KeysGenerator keysGenerator;
     protected Cipher cipher;
     protected IvParameterSpec iv;
 
-    public Decryption(byte[] encryptedText, String outputFileName, KeysGenerator keysGenerator) {
+    public Decryption(byte[] encryptedText, KeysGenerator keysGenerator) {
         try {
             this.encryptedText = encryptedText;
-            cipher = Cipher.getInstance("Blowfish");
-            this.outputFileName = outputFileName;
-            keySecret = keysGenerator.getKeySecret();
+            this.cipher = Cipher.getInstance("Blowfish");
+            this.keysGenerator = keysGenerator;
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(Decryption.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
@@ -46,7 +43,7 @@ public class Decryption {
         }
     }
 
-    public void writeFile(String path, byte[] text) throws FileNotFoundException {
+    public void writeFile(String path,String outputFileName, byte[] text) throws FileNotFoundException {
         try {
             FileOutputStream outputStream
                     = new FileOutputStream(path + "\\" + outputFileName);
@@ -57,15 +54,10 @@ public class Decryption {
         }
     }
 
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        try {
-            cipher.init(Cipher.DECRYPT_MODE, keySecret,iv);
-            byte[] decryptedText = cipher.doFinal(encryptedText);
-            return decryptedText;
-        } catch (InvalidAlgorithmParameterException ex) {
-            Logger.getLogger(Decryption.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    public byte[] decryptText() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        this.cipher.init(Cipher.DECRYPT_MODE, this.keysGenerator.getKeySecret());
+        byte[] decryptedText = this.cipher.doFinal(encryptedText);
+        return decryptedText;
     }
 
     public void setIvParameterSpec(byte[] ivBytes) {

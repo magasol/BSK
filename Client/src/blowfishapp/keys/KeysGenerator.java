@@ -42,6 +42,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public final class KeysGenerator {
 
+    public byte[] encryptedSessionKeyBytes;
     private SecretKey keySecret;
     final private String privateFolderName = ".\\private";
     final private String publicFolderName = ".\\public";
@@ -60,17 +61,17 @@ public final class KeysGenerator {
             PrivateKey privateKey = keypair.getPrivate();
             PublicKey publicKey = keypair.getPublic();
 
-            SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
-            DecryptionCBC encryption = new DecryptionCBC(null, null, this);
-            byte[] privateKeyBytes = encryption.encryptKey(privateKey.getEncoded(), secretKeySpec);
+            this.keySecret = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
+            DecryptionCBC encryption = new DecryptionCBC(null, this);
+            byte[] privateKeyBytes = encryption.encryptKey(privateKey.getEncoded());
 
             //System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             //System.out.println(new String(publicKey.getEncoded()));
-            if (!new File(privateFolderName).exists()) {
-                new File(privateFolderName).mkdir();
+            if (!new File(this.privateFolderName).exists()) {
+                new File(this.privateFolderName).mkdir();
             }
-            if (!new File(publicFolderName).exists()) {
-                new File(publicFolderName).mkdir();
+            if (!new File(this.publicFolderName).exists()) {
+                new File(this.publicFolderName).mkdir();
             }
 
             byte[] ivLength = ByteBuffer.allocate(4).putInt(encryption.getIvBytes().length).array();
@@ -112,7 +113,7 @@ public final class KeysGenerator {
     public void writeFile(String path, byte[] text) throws FileNotFoundException {
         try {
             FileOutputStream outputStream
-                    = new FileOutputStream(path + "\\" + fileName);
+                    = new FileOutputStream(path + "\\" + this.fileName);
             outputStream.write(text);
             outputStream.close();
         } catch (IOException ex) {
@@ -120,12 +121,12 @@ public final class KeysGenerator {
         }
     }
 
-    public void decryptSecretKey(byte[] encryptedSecretKey, String pswd) {
+    public void decryptSecretKey(String pswd) {
         PrivateKey privateKey = decryptPrivateKey(pswd);
         try {
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            byte[] decryptedSecretKeyBytes = cipher.doFinal(encryptedSecretKey);
+            byte[] decryptedSecretKeyBytes = cipher.doFinal(this.encryptedSessionKeyBytes);
             this.keySecret = new SecretKeySpec(decryptedSecretKeyBytes, "Blowfish");
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
@@ -144,7 +145,7 @@ public final class KeysGenerator {
         try {
             SecretKeySpec secretKeySpec = createKeyForRSAPrivateKeyEncryption(createPswdShortcut(pswd));
             this.keySecret = secretKeySpec;
-            DecryptionCBC keyDecryption = new DecryptionCBC(null, null, this);            
+            DecryptionCBC keyDecryption = new DecryptionCBC(null, this);
 
             byte[] privateKeyFileBytes = readPrivateKey();
             byte[] ivLength = new byte[4];
@@ -156,7 +157,7 @@ public final class KeysGenerator {
             System.arraycopy(privateKeyFileBytes, 4 + ByteBuffer.wrap(ivLength).getInt(), privateKeyBytes, 0, keyLength);
 
             keyDecryption.setIvParameterSpec(iv);
-            byte[] decryptedPrivateKeyBytes = keyDecryption.decryptText(privateKeyBytes);
+            byte[] decryptedPrivateKeyBytes = keyDecryption.decryptKey(privateKeyBytes);
             return KeyFactory.getInstance("RSA")
                     .generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
         } catch (NoSuchAlgorithmException ex) {
@@ -177,7 +178,7 @@ public final class KeysGenerator {
 
     public byte[] readPublicKey() {
         try {
-            return readFile(publicFolderName + "\\" + fileName);
+            return readFile(this.publicFolderName + "\\" + this.fileName);
         } catch (IOException ex) {
             Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -186,7 +187,7 @@ public final class KeysGenerator {
 
     public byte[] readPrivateKey() {
         try {
-            return readFile(privateFolderName + "\\" + fileName);
+            return readFile(this.privateFolderName + "\\" + this.fileName);
         } catch (IOException ex) {
             Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -199,6 +200,6 @@ public final class KeysGenerator {
     }
 
     public SecretKey getKeySecret() {
-        return keySecret;
+        return this.keySecret;
     }
 }

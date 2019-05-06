@@ -20,14 +20,21 @@ import javafx.stage.Stage;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import blowfishapp.tcp.*;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.scene.control.ChoiceBox;
 import java.net.UnknownHostException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
  *
@@ -35,10 +42,10 @@ import java.net.UnknownHostException;
  */
 public class BlowFishApp extends Application {
 
-    Decryption encryption = null;
+    final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
+    Decryption decryption = null;
     String address = "127.0.0.3";
     int port = 9999;
-    FileRequest request;
 
     @Override
     public void start(Stage primaryStage) throws UnknownHostException {
@@ -63,10 +70,15 @@ public class BlowFishApp extends Application {
         chooseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                request = new FileRequest(serverAddress, port);
-                Task<Void> task = request;
-                executor.submit(task);
+                try {
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    Future<String> callFuture = executor.submit(new FileRequest(serverAddress, port));
+                    filesListText.setText("Pliki do wyboru:\n" + callFuture.get());
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ExecutionException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 
@@ -78,12 +90,14 @@ public class BlowFishApp extends Application {
 
                 try {
                     ExecutorService executor = Executors.newSingleThreadExecutor();
-                    //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
-                    Task<Void> task = new Client(serverAddress, port,
+
+                    Future<Decryption> callFuture = executor.submit(new Client(serverAddress, port,
                             encryptionChoiceBox.getValue().getBytes(), inputFileNameTextField.getText().getBytes(),
-                            outputFileNameTextField.getText(), pswdField.getText());
-                    executor.submit(task);
+                            pswdField.getText()));
+                    decryption = callFuture.get();
+                    pswdField.clear();
+                    System.out.println("Odrzymano zaszyfrowany plik");
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -91,12 +105,29 @@ public class BlowFishApp extends Application {
         });
 
         Button updateButton = new Button();
-        updateButton.setText("Odśwież");
+        updateButton.setText("Odszyfruj plik");
         updateButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if (!request.files.isEmpty()) {
-                    filesListText.setText(request.files);
+                if (decryption != null) {
+                    try {
+                        decryption.keysGenerator.decryptSecretKey(pswdField.getText());
+                        byte[] decryptedText = decryption.decryptText();
+                        decryption.writeFile(outputPathDecrypted, outputFileNameTextField.getText(), decryptedText);
+                        System.out.println("Plik odszyfrowany");
+                    } catch (NoSuchAlgorithmException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchPaddingException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvalidKeyException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalBlockSizeException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (BadPaddingException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         });
