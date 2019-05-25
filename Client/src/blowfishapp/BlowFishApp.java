@@ -5,7 +5,6 @@
  */
 package blowfishapp;
 
-import blowfishapp.decryptionModes.Decryption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -25,9 +24,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.scene.control.ChoiceBox;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
+import javafx.concurrent.Task;
 
 /**
  *
@@ -35,10 +35,8 @@ import java.net.UnknownHostException;
  */
 public class BlowFishApp extends Application {
 
-    Decryption encryption = null;
     String address = "127.0.0.3";
     int port = 9999;
-    FileRequest request;
 
     @Override
     public void start(Stage primaryStage) throws UnknownHostException {
@@ -63,10 +61,17 @@ public class BlowFishApp extends Application {
         chooseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                request = new FileRequest(serverAddress, port);
-                Task<Void> task = request;
-                executor.submit(task);
+                try {
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    Task<String> task = new FileRequest(serverAddress, port);
+                    executor.submit(task);
+                    filesListText.setText("Pliki do wyboru:\n" + task.get());
+                    
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ExecutionException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 
@@ -78,25 +83,14 @@ public class BlowFishApp extends Application {
 
                 try {
                     ExecutorService executor = Executors.newSingleThreadExecutor();
-                    //pamiętać o zmianie adresu serwera
                     InetAddress serverAddress = InetAddress.getByName(address);
+
                     Task<Void> task = new Client(serverAddress, port,
                             encryptionChoiceBox.getValue().getBytes(), inputFileNameTextField.getText().getBytes(),
                             outputFileNameTextField.getText(), pswdField.getText());
                     executor.submit(task);
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-
-        Button updateButton = new Button();
-        updateButton.setText("Odśwież");
-        updateButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                if (!request.files.isEmpty()) {
-                    filesListText.setText(request.files);
                 }
             }
         });
@@ -116,7 +110,6 @@ public class BlowFishApp extends Application {
         gridPane.add(pswdText, 0, 5);
         gridPane.add(pswdField, 1, 5);
         gridPane.add(sendButton, 0, 6);
-        gridPane.add(updateButton, 0, 7);
         gridPane.add(filesListText, 0, 8);
 
         Scene scene = new Scene(gridPane, 400, 350);

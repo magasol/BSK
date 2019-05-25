@@ -22,10 +22,10 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class DecryptionCFB extends Decryption {
 
-    public DecryptionCFB(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
-        super(fullFileName, outputFileName, keysGenerator);
+    public DecryptionCFB(byte[] fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
+            this.cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
 
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
@@ -34,10 +34,11 @@ public class DecryptionCFB extends Decryption {
         }
     }
 
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    @Override
+    public byte[] decryptText() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
-            cipher.init(Cipher.DECRYPT_MODE, keySecret, iv);
-            byte[] decryptedText = cipher.doFinal(encryptedText);
+            this.cipher.init(Cipher.DECRYPT_MODE, this.keysGenerator.getKeySecret(), this.iv);
+            byte[] decryptedText = this.cipher.doFinal(this.encryptedText);
             return decryptedText;
         } catch (InvalidAlgorithmParameterException ex) {
             Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);

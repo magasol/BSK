@@ -15,7 +15,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 
 /**
  *
@@ -25,8 +24,8 @@ public class DecryptionCBC extends Decryption {
 
     private byte[] ivBytes;
 
-    public DecryptionCBC(byte[] fullFileName, String outputFileName, KeysGenerator keysGenerator) {
-        super(fullFileName, outputFileName, keysGenerator);
+    public DecryptionCBC(byte[] fullFileName, KeysGenerator keysGenerator) {
+        super(fullFileName, keysGenerator);
         try {
             cipher = Cipher.getInstance("Blowfish/CBC/ISO10126Padding");
 
@@ -38,10 +37,10 @@ public class DecryptionCBC extends Decryption {
     }
 
     @Override
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public byte[] decryptText() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
-            cipher.init(Cipher.DECRYPT_MODE, keySecret, iv);
-            byte[] decryptedText = cipher.doFinal(encryptedText);
+            cipher.init(Cipher.DECRYPT_MODE, this.keysGenerator.getKeySecret(), this.iv);
+            byte[] decryptedText = this.cipher.doFinal(this.encryptedText);
             return decryptedText;
         } catch (InvalidAlgorithmParameterException ex) {
             Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
@@ -49,16 +48,30 @@ public class DecryptionCBC extends Decryption {
         return null;
     }
 
-    public byte[] encryptKey(byte[] text, SecretKey key) {
+    public byte[] decryptKey(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            this.ivBytes = cipher.getIV();
+            this.cipher.init(Cipher.DECRYPT_MODE, this.keysGenerator.getKeySecret(), this.iv);
+            byte[] decryptedText = this.cipher.doFinal(encryptedText);
+            return decryptedText;
+        } catch (InvalidAlgorithmParameterException ex) {
+            Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public byte[] encryptKey(byte[] text) {
+        try {
+            System.out.println(Cipher.getMaxAllowedKeyLength("Blowfish/CBC/ISO10126Padding"));
+            this.cipher.init(Cipher.ENCRYPT_MODE, this.keysGenerator.getKeySecret());
+            this.ivBytes = this.cipher.getIV();
             return cipher.doFinal(text);
         } catch (InvalidKeyException ex) {
             Logger.getLogger(DecryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalBlockSizeException ex) {
             Logger.getLogger(DecryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         } catch (BadPaddingException ex) {
+            Logger.getLogger(DecryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(DecryptionCBC.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;

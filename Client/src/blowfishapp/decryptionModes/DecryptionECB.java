@@ -21,10 +21,10 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class DecryptionECB extends Decryption {
 
-    public DecryptionECB(byte[] encryptedText, String outputFileName, KeysGenerator keysGenerator) {
-        super(encryptedText, outputFileName, keysGenerator);
+    public DecryptionECB(byte[] encryptedText, KeysGenerator keysGenerator) {
+        super(encryptedText, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish/ECB/ISO10126Padding");
+            this.cipher = Cipher.getInstance("Blowfish/ECB/ISO10126Padding");
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
@@ -32,9 +32,10 @@ public class DecryptionECB extends Decryption {
         }
     }
 
-    public byte[] decryptText(byte[] encryptedText) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        cipher.init(Cipher.DECRYPT_MODE, keySecret);
-        byte[] decryptedText = cipher.doFinal(encryptedText);
+    @Override
+    public byte[] decryptText() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        this.cipher.init(Cipher.DECRYPT_MODE, this.keysGenerator.getKeySecret());
+        byte[] decryptedText = this.cipher.doFinal(this.encryptedText);
         return decryptedText;
     }
 }
