@@ -10,15 +10,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.concurrent.Task;
 
 /**
  *
  * @author Aleksandra
  */
-public class FileRequest implements Callable {
+public class FileRequest extends Task<String> {
 
     public String files;
     private ObjectOutputStream out;
@@ -35,7 +35,7 @@ public class FileRequest implements Callable {
 
         byte[] text = "list".getBytes();
 
-        Socket socket = new Socket(serverAddress, PORT);
+        Socket socket = new Socket(this.serverAddress, this.PORT);
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.out.flush();
 
