@@ -37,8 +37,8 @@ public class Server {
     private KeysGenerator keysGenerator;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    //String path = "C:\\Users\\Aleksandra\\Desktop";
-    String path = "E:\\semestr 6\\bsk\\test";
+    String path = "C:\\Users\\Aleksandra\\Desktop";
+    //String path = "E:\\semestr 6\\bsk\\test";
 
     public Server(int port, InetAddress serverAddress) {
         try {

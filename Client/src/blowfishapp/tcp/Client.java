@@ -5,6 +5,7 @@
  */
 package blowfishapp.tcp;
 
+import blowfishapp.BlowFishApp;
 import blowfishapp.decryptionModes.Decryption;
 import blowfishapp.decryptionModes.DecryptionCBC;
 import blowfishapp.decryptionModes.DecryptionCFB;
@@ -21,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.concurrent.Task;
+import javafx.scene.control.ProgressBar;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -31,10 +33,10 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class Client extends Task<Void> {
 
-    //final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    //final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
-    final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
+    final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    //final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
+    //final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
     final private int PORT;
     private InetAddress serverAddress;
     private ObjectOutputStream out;
@@ -47,15 +49,18 @@ public class Client extends Task<Void> {
     private byte[] fileName;
     private String outputFileName;
     private Socket socket;
+    private ProgressBar progressBar;
 
     public Client(InetAddress serverAddress, int serverPort,
-            byte[] mode, byte[] inputFileName, String outputFileName, String pswd) {
+            byte[] mode, byte[] inputFileName, String outputFileName, String pswd,
+            ProgressBar progressBar) {
         this.PORT = serverPort;
         this.serverAddress = serverAddress;
         this.pswd = pswd;
         this.type = mode;
         this.fileName = inputFileName;
         this.outputFileName = outputFileName;
+        this.progressBar = progressBar;
     }
     @Override
     protected Void call() throws Exception {
@@ -72,22 +77,30 @@ public class Client extends Task<Void> {
             this.out.writeInt(request.length);
             this.out.write(request, 0, request.length);
             this.out.flush();
+            
+            progressBar.setProgress(0.1);
 
             this.out.writeInt(fileName.length);
             this.out.write(fileName, 0, fileName.length);
             this.out.flush();
             System.out.println("Aplikacja wysłała ścieżke: " + new String(fileName));
+            
+            progressBar.setProgress(0.2);
 
             this.out.writeInt(type.length);
             this.out.write(type, 0, type.length);
             this.out.flush();
             System.out.println("Aplikacja wysłała tryb kodowania: " + new String(type));
 
+            progressBar.setProgress(0.3);
+
             byte[] keySecretBytes = this.keysGenerator.readPublicKey();
             this.out.writeInt(keySecretBytes.length);
             this.out.write(keySecretBytes, 0, keySecretBytes.length);
             this.out.flush();
             System.out.println("Aplikacja wysłała klucz publiczny");
+
+            progressBar.setProgress(0.4);
 
             receive(socket);
             
@@ -110,6 +123,8 @@ public class Client extends Task<Void> {
                     flag = false;
                 }
 
+                progressBar.setProgress(0.5);
+
                 len = in.readInt();
                 byte[] encryptedSessionKeyBytes = new byte[len];
                 if (len > 0) {
@@ -119,6 +134,8 @@ public class Client extends Task<Void> {
                     flag = false;
                 }
 
+                progressBar.setProgress(0.6);
+
                 len = in.readInt();
                 byte[] encryptedText = new byte[len];
                 if (len > 0) {
@@ -127,8 +144,17 @@ public class Client extends Task<Void> {
                     System.out.println("Aplikacja odebrała: zaszyfrowany plik od serwera");
                     flag = false;
                 }
+                
+                progressBar.setProgress(0.7);
+
                 this.keysGenerator.encryptedSessionKeyBytes = encryptedSessionKeyBytes;
-                prepareForDecryption(encryptedText, iv);              
+               
+                progressBar.setProgress(0.8);
+
+                prepareForDecryption(encryptedText, iv);         
+                
+                progressBar.setProgress(1);
+
                 System.out.println("KONIEC");
                 stop();
             } catch (IOException ex) {

@@ -28,6 +28,8 @@ import javafx.scene.control.ChoiceBox;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 import javafx.concurrent.Task;
+import javafx.scene.control.ProgressBar;
+import javax.swing.JProgressBar;
 
 /**
  *
@@ -37,6 +39,7 @@ public class BlowFishApp extends Application {
 
     String address = "127.0.0.3";
     int port = 9999;
+    public ProgressBar progressBar = new ProgressBar();
 
     @Override
     public void start(Stage primaryStage) throws UnknownHostException {
@@ -46,7 +49,9 @@ public class BlowFishApp extends Application {
         Text inputFileNameText = new Text("Plik wejściowy");
         TextField inputFileNameTextField = new TextField("Nazwa");
         Text filesListText = new Text("Pliki do wyboru:");
-
+        progressBar.setPrefWidth(250.0d);
+        progressBar.setProgress(0);
+        
         ObservableList<String> names = FXCollections.observableArrayList(
                 "ECB", "CBC", "CFB", "OFB", "BRAK");
         ChoiceBox<String> encryptionChoiceBox = new ChoiceBox<>(names);
@@ -87,14 +92,15 @@ public class BlowFishApp extends Application {
 
                     Task<Void> task = new Client(serverAddress, port,
                             encryptionChoiceBox.getValue().getBytes(), inputFileNameTextField.getText().getBytes(),
-                            outputFileNameTextField.getText(), pswdField.getText());
+                            outputFileNameTextField.getText(), pswdField.getText(),progressBar);
                     executor.submit(task);
+                    //progressBar.setProgress(1);
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
-
+        
         GridPane gridPane = new GridPane();
 
         gridPane.setHgap(10);
@@ -110,7 +116,8 @@ public class BlowFishApp extends Application {
         gridPane.add(pswdText, 0, 5);
         gridPane.add(pswdField, 1, 5);
         gridPane.add(sendButton, 0, 6);
-        gridPane.add(filesListText, 0, 8);
+        gridPane.add(progressBar, 0, 7);
+        gridPane.add(filesListText, 0, 9);
 
         Scene scene = new Scene(gridPane, 400, 350);
 
@@ -123,6 +130,11 @@ public class BlowFishApp extends Application {
         primaryStage.show();
     }
 
+    public void setProgress(int progress)
+    {
+        progressBar.setProgress(progress);
+    }
+    
     /**
      * @param args the command line arguments
      */

@@ -95,7 +95,8 @@ public final class KeysGenerator {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
             //System.out.println("Skrót hasła: " + new String(pswdShortcut));
-            return pswdShortcut;
+            //return pswdShortcut;
+            return "1234567890123456".getBytes();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
