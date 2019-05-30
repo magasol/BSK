@@ -51,7 +51,7 @@ public class BlowFishApp extends Application {
         Text login = new Text("Podaj login: ");
         Text password = new Text("Podaj hasło: ");
         TextField loginTextField = new TextField("Login");
-        TextField passwordTextField = new TextField("Password");
+        PasswordField passwordTextField = new PasswordField();
         TextField outputFileNameTextField = new TextField("Nazwa");
         Text inputFileNameText = new Text("Plik wejściowy");
         TextField inputFileNameTextField = new TextField("Nazwa");

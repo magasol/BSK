@@ -33,10 +33,10 @@ import javax.crypto.NoSuchPaddingException;
  */
 public class Client extends Task<Void> {
 
-    final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
-    //final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
-    //final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
+    //final private String outputPathEncrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    //final private String outputPathDecrypted = "D:\\STUDIA\\VI semestr\\BSK";
+    final private String outputPathDecrypted = "E:\\semestr 6\\bsk\\decrypted";
+    final private String outputPathEncrypted = "E:\\semestr 6\\bsk\\encrypted";
     final private int PORT;
     private InetAddress serverAddress;
     private ObjectOutputStream out;
@@ -192,13 +192,14 @@ public class Client extends Task<Void> {
                 }
                 if (!"ecb".equals(new String(this.type))) {
                     this.decryption.setIvParameterSpec(ivBytes);
-                }           
+                }
                 this.decryption.writeFile(this.outputPathEncrypted,new String(this.fileName), encryptedText);
                 this.decryption.encryptedText = encryptedText;
                 
                 this.decryption.keysGenerator.decryptSecretKey(this.pswd);
                 byte[] decryptedText = this.decryption.decryptText();
-                this.decryption.writeFile(this.outputPathDecrypted,this.outputFileName, decryptedText);
+                String outputFileNameMatched = matchOutputFileNameExtension();
+                this.decryption.writeFile(this.outputPathDecrypted, outputFileNameMatched, decryptedText);
                 System.out.println("Plik odszyfrowany");
             } catch (NoSuchAlgorithmException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -218,6 +219,22 @@ public class Client extends Task<Void> {
         this.keysGenerator = new KeysGenerator(pswd);
     }
 
+    
+    private String matchOutputFileNameExtension() {
+        String inputFileNameString = (new String(this.fileName));
+        String[] inputFileNameElements = inputFileNameString.split("\\.",2);
+        String inputFileExtension = inputFileNameElements[1];
+        if(this.outputFileName.contains(".")) {
+            String outputFileNameString = new String(this.outputFileName);
+            String[] outputFileNameElements = outputFileNameString.split("\\.",2);
+            outputFileNameElements[1]=inputFileExtension;
+            return outputFileNameElements[0]+"."+outputFileNameElements[1];
+        }
+        else {
+            return (this.outputFileName+"."+inputFileExtension);
+        }
+    }
+    
     private void stop() throws IOException {
         this.socket.close();
         this.in.close();
