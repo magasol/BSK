@@ -25,7 +25,7 @@ public class EncryptionOFB extends Encryption {
     public EncryptionOFB(String fullFileName, KeysGenerator keysGenerator) {
         super(fullFileName, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish/OFB/ISO10126Padding");
+            cipher = Cipher.getInstance("Blowfish/OFB32/ISO10126Padding");
 
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);

@@ -37,8 +37,8 @@ public class Server {
     private KeysGenerator keysGenerator;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    String path = "C:\\Users\\Aleksandra\\Desktop";
-    //String path = "E:\\semestr 6\\bsk\\test";
+    //String path = "C:\\Users\\Aleksandra\\Desktop";
+    String path = "E:\\semestr 6\\bsk\\test";
     String[] users = new String[] {"user1", "user2", "user3", "user4"};
     String[] passwords = new String[] {"pass1", "pass2", "pass3", "pass4"};
     

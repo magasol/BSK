@@ -25,7 +25,7 @@ public class DecryptionCFB extends Decryption {
     public DecryptionCFB(byte[] fullFileName, KeysGenerator keysGenerator) {
         super(fullFileName, keysGenerator);
         try {
-            this.cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
+            this.cipher = Cipher.getInstance("Blowfish/CFB32/ISO10126Padding");
 
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);

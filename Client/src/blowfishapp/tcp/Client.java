@@ -5,7 +5,6 @@
  */
 package blowfishapp.tcp;
 
-import blowfishapp.BlowFishApp;
 import blowfishapp.decryptionModes.Decryption;
 import blowfishapp.decryptionModes.DecryptionCBC;
 import blowfishapp.decryptionModes.DecryptionCFB;

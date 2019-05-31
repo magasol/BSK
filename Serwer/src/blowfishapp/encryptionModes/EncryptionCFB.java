@@ -25,7 +25,7 @@ public class EncryptionCFB extends Encryption {
     public EncryptionCFB(String fullFileName, KeysGenerator keysGenerator) {
         super(fullFileName, keysGenerator);
         try {
-            cipher = Cipher.getInstance("Blowfish/CFB/ISO10126Padding");
+            cipher = Cipher.getInstance("Blowfish/CFB32/ISO10126Padding");
 
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(EncryptionECB.class.getName()).log(Level.SEVERE, null, ex);
