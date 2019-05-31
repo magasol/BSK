@@ -37,9 +37,11 @@ public class Server {
     private KeysGenerator keysGenerator;
     private ObjectOutputStream out;
     private ObjectInputStream in;
-    //String path = "C:\\Users\\Aleksandra\\Desktop";
-    String path = "E:\\semestr 6\\bsk\\test";
-
+    String path = "C:\\Users\\Aleksandra\\Desktop";
+    //String path = "E:\\semestr 6\\bsk\\test";
+    String[] users = new String[] {"user1", "user2", "user3", "user4"};
+    String[] passwords = new String[] {"pass1", "pass2", "pass3", "pass4"};
+    
     public Server(int port, InetAddress serverAddress) {
         try {
             int backlog = 0;
@@ -74,6 +76,10 @@ public class Server {
                     manageSendingEncryptedFile(port);
                 } else if ("list".equals(new String(requestFor))) {
                     manageFilesListRequest(port);
+                }
+                else if("login".equals(new String(requestFor)))
+                {
+                    manageLoginRequest(port);
                 }
             }
         } catch (IOException ex) {
@@ -192,6 +198,28 @@ public class Server {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+        private void manageLoginRequest(int port) {
+        try {
+            System.out.println("Serwer odebrał prosbe o sprawdzenie wyniku logowania");
+            
+            int len = in.readInt();
+            byte[] login = new byte[len];
+            if (len > 0) {
+                in.readFully(login);
+            }
+            
+            len = in.readInt();
+            byte[] password = new byte[len];
+            if (len > 0) {
+                in.readFully(password);
+            }
+            
+            sendLoginResult(new String(login), new String(password));
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     public void sendFilesList() throws IOException {
         String files = chooseFile(path);
@@ -202,6 +230,25 @@ public class Server {
         this.out.flush();
 
         System.out.println("serwer wysłał liste plikow");
+    }
+    
+    public void sendLoginResult(String login, String password) throws IOException {
+        String result = "failed";
+                
+        for(int i =0; i < users.length; i++)
+        {
+            if(login.contentEquals(users[i]) && password.contentEquals(passwords[i]))
+            {
+                result = "success";
+            }
+        }
+        
+        byte[] bResult = result.getBytes();
+        this.out.writeInt(bResult.length);
+        this.out.write(bResult, 0, bResult.length);
+        this.out.flush();
+
+        System.out.println("serwer wysłał rezultat logowania");
     }
 
     public String chooseFile(String path) {

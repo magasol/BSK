@@ -40,9 +40,7 @@ public class BlowFishApp extends Application {
     String address = "127.0.0.3";
     int port = 9999;
     public ProgressBar progressBar = new ProgressBar();
-    String[] users = new String[]{"user1","user2","user3","user4"};
-    String[] passwords = new String[]{"haslo1", "haslo2", "haslo3", "haslo4"};
-    
+  
     @Override
     public void start(Stage primaryStage) throws UnknownHostException {
         Text encryptionTypeText = new Text("Tryb szyfrowania");
@@ -145,19 +143,21 @@ public class BlowFishApp extends Application {
 
                 String pass = passwordTextField.getText();
                 String user = loginTextField.getText();
-                boolean exists = false;
+                String result = "failed";
                 int number = 0;
 
-                for(int i =0; i < 4; i++)
-                {
-                    if(users[i].contentEquals(user))
-                    {
-                        exists = true;
-                        number = i;
-                    }
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    Task<String> taskLogin = new Login(serverAddress, port, user, pass);
+                    executor.submit(taskLogin);
+                try {
+                    result = taskLogin.get();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ExecutionException ex) {
+                    Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                if (exists && passwords[number].contentEquals(pass)) {               
+                if (result.contentEquals("success")) {               
                     passwordTextField.setText(null);
                     loginTextField.setText(null);
                     error.setText(null);
@@ -181,7 +181,7 @@ public class BlowFishApp extends Application {
                     loginButton.setVisible(false);
                     error.setVisible(false);
                 }
-                else
+                if(result.contentEquals("failed"))
                 {
                     error.setText("Złe hasło lub login. Spróbuj jeszcze raz.");
                 }
