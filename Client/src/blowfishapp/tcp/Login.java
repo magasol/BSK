@@ -10,6 +10,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.concurrent.Task;
@@ -37,8 +39,8 @@ public class Login extends Task<String> {
     @Override
     public String call() throws Exception {
         byte[] text = "login".getBytes();
-        byte[] bPassword = password.getBytes();
-        byte[] bLogin = login.getBytes();
+        byte[] passwordBytes = password.getBytes();
+        byte[] LoginBytes = login.getBytes();
         Socket socket = new Socket(this.serverAddress, this.PORT);
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.out.flush();
@@ -52,14 +54,16 @@ public class Login extends Task<String> {
             this.out.write(text, 0, text.length);
             this.out.flush();
             System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
-            
-            this.out.writeInt(bLogin.length);
-            this.out.write(bLogin, 0, bLogin.length);
+
+            this.out.writeInt(LoginBytes.length);
+            this.out.write(LoginBytes, 0, LoginBytes.length);
             this.out.flush();
             System.out.println("Aplikacja wysłała login");
-            
-            this.out.writeInt(bPassword.length);
-            this.out.write(bPassword, 0, bPassword.length);
+
+            byte[] passwordHashBytes = hashPassword(passwordBytes);
+
+            this.out.writeInt(passwordHashBytes.length);
+            this.out.write(passwordHashBytes, 0, passwordHashBytes.length);
             this.out.flush();
             System.out.println("Aplikacja wysłała hasło");
 
@@ -68,6 +72,17 @@ public class Login extends Task<String> {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         return this.result;
+    }
+
+    private byte[] hashPassword(byte[] passwordBytes) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5"); // wszystie inne dają wiecej niz 16 bajtów
+            md.update(passwordBytes);
+            return md.digest();
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(Login.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public void receiveResult(Socket socket) throws IOException {
