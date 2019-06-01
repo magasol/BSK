@@ -95,8 +95,8 @@ public final class KeysGenerator {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
             //System.out.println("Skrót hasła: " + new String(pswdShortcut));
-            //return pswdShortcut;
-            return "1234567890123456".getBytes();
+            return pswdShortcut;
+            //return "1234567890123456".getBytes();
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -122,24 +122,12 @@ public final class KeysGenerator {
         }
     }
 
-    public void decryptSecretKey(String pswd) {
+    public void decryptSecretKey(String pswd) throws InvalidKeyException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException {
         PrivateKey privateKey = decryptPrivateKey(pswd);
-        try {
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            byte[] decryptedSecretKeyBytes = cipher.doFinal(this.encryptedSessionKeyBytes);
-            this.keySecret = new SecretKeySpec(decryptedSecretKeyBytes, "Blowfish");
-        } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (NoSuchPaddingException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InvalidKeyException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalBlockSizeException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (BadPaddingException ex) {
-            Logger.getLogger(KeysGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] decryptedSecretKeyBytes = cipher.doFinal(this.encryptedSessionKeyBytes);
+        this.keySecret = new SecretKeySpec(decryptedSecretKeyBytes, "Blowfish");
     }
 
     private PrivateKey decryptPrivateKey(String pswd) {

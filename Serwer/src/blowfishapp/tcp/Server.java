@@ -20,6 +20,8 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,9 +41,9 @@ public class Server {
     private ObjectInputStream in;
     //String path = "C:\\Users\\Aleksandra\\Desktop";
     String path = "E:\\semestr 6\\bsk\\test";
-    String[] users = new String[] {"user1", "user2", "user3", "user4"};
-    String[] passwords = new String[] {"pass1", "pass2", "pass3", "pass4"};
-    
+    List<String> users = new ArrayList<String>();
+    List<String> passwords = new ArrayList<String>();
+
     public Server(int port, InetAddress serverAddress) {
         try {
             int backlog = 0;
@@ -76,10 +78,8 @@ public class Server {
                     manageSendingEncryptedFile(port);
                 } else if ("list".equals(new String(requestFor))) {
                     manageFilesListRequest(port);
-                }
-                else if("login".equals(new String(requestFor)))
-                {
-                    manageLoginRequest(port);
+                } else if ("login".equals(new String(requestFor))) {
+                    manageLoginRequest();
                 }
             }
         } catch (IOException ex) {
@@ -186,36 +186,10 @@ public class Server {
         }
     }
 
-    private void generateKeys(byte[] keySecret) {
-        this.keysGenerator = new KeysGenerator(keySecret);
-    }
-
     private void manageFilesListRequest(int port) {
         try {
             System.out.println("Serwer odebrał prosbe o wyswietlenie listy plikow");
             sendFilesList();
-        } catch (IOException ex) {
-            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-        private void manageLoginRequest(int port) {
-        try {
-            System.out.println("Serwer odebrał prosbe o sprawdzenie wyniku logowania");
-            
-            int len = in.readInt();
-            byte[] login = new byte[len];
-            if (len > 0) {
-                in.readFully(login);
-            }
-            
-            len = in.readInt();
-            byte[] password = new byte[len];
-            if (len > 0) {
-                in.readFully(password);
-            }
-            
-            sendLoginResult(new String(login), new String(password));
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -231,26 +205,72 @@ public class Server {
 
         System.out.println("serwer wysłał liste plikow");
     }
-    
-    public void sendLoginResult(String login, String password) throws IOException {
+
+    private void manageLoginRequest() {
+        try {
+            System.out.println("Serwer odebrał prosbe o sprawdzenie wyniku logowania");
+
+            int len = in.readInt();
+            byte[] login = new byte[len];
+            if (len > 0) {
+                in.readFully(login);
+            }
+
+            len = in.readInt();
+            byte[] password = new byte[len];
+            if (len > 0) {
+                in.readFully(password);
+            }
+            if (userExists(new String(login))) {
+                checkPasswordCorrection(new String(login), new String(password));
+            } else {
+                addNewUser(new String(login), new String(password));
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private boolean userExists(String login) {
+        for (String user : users) {
+            if (user.equals(login)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void checkPasswordCorrection(String login, String password) throws IOException {
         String result = "failed";
-                
-        for(int i =0; i < users.length; i++)
-        {
-            if(login.contentEquals(users[i]) && password.contentEquals(passwords[i]))
-            {
+
+        for (int i = 0; i < users.size(); i++) {
+            if (login.contentEquals(users.get(i)) && password.contentEquals(passwords.get(i))) {
                 result = "success";
             }
         }
-        
-        byte[] bResult = result.getBytes();
-        this.out.writeInt(bResult.length);
-        this.out.write(bResult, 0, bResult.length);
-        this.out.flush();
-
-        System.out.println("serwer wysłał rezultat logowania");
+        sendLoginResult(result);
     }
 
+    private void addNewUser(String login, String password) {
+        this.users.add(login);
+        this.passwords.add(password);
+        sendLoginResult("success");
+    }
+    
+    private void sendLoginResult(String result)
+    {
+        try {
+            byte[] resultBytes = result.getBytes();
+            this.out.writeInt(resultBytes.length);
+            this.out.write(resultBytes, 0, resultBytes.length);
+            this.out.flush();
+            
+            System.out.println("serwer wysłał rezultat logowania");
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public String chooseFile(String path) {
         String list = "";
         try {

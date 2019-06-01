@@ -5,6 +5,7 @@
  */
 package blowfishapp;
 
+import blowfishapp.keys.KeysGenerator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -29,7 +30,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 import javafx.concurrent.Task;
 import javafx.scene.control.ProgressBar;
-import javax.swing.JProgressBar;
 
 /**
  *
@@ -40,19 +40,22 @@ public class BlowFishApp extends Application {
     String address = "127.0.0.3";
     int port = 9999;
     public ProgressBar progressBar = new ProgressBar();
-  
+    public KeysGenerator keysGenerator;
+
     @Override
     public void start(Stage primaryStage) throws UnknownHostException {
         Text encryptionTypeText = new Text("Tryb szyfrowania");
         Text outputFileNameText = new Text("Plik wyjściowy");
-        Text error = new Text("");
-        Text login = new Text("Podaj login: ");
-        Text password = new Text("Podaj hasło: ");
+        Text errorText = new Text("");
+        Text loginText = new Text("Podaj login: ");
+        Text pswdText = new Text("Podaj hasło: ");
         TextField loginTextField = new TextField("Login");
-        PasswordField passwordTextField = new PasswordField();
+        PasswordField LoginPswdTextField = new PasswordField();
         TextField outputFileNameTextField = new TextField("Nazwa");
         Text inputFileNameText = new Text("Plik wejściowy");
         TextField inputFileNameTextField = new TextField("Nazwa");
+        Text confirmPswdText = new Text("Potwierdz hasłem");
+        PasswordField confirmPswdField = new PasswordField();
         Text filesListText = new Text("Pliki do wyboru:");
         progressBar.setPrefWidth(250.0d);
         progressBar.setProgress(0);
@@ -61,13 +64,20 @@ public class BlowFishApp extends Application {
                 "ECB", "CBC", "CFB", "OFB", "BRAK");
         ChoiceBox<String> encryptionChoiceBox = new ChoiceBox<>(names);
 
-        Text pswdText = new Text("Hasło");
-        PasswordField pswdField = new PasswordField();
-
         InetAddress serverAddress = InetAddress.getByName(address);
 
         Button chooseButton = new Button();
         chooseButton.setText("Lista plików");
+        Button askForFileButton = new Button();
+        askForFileButton.setText("Prośba o plik");
+        Button sendButton = new Button();
+        sendButton.setVisible(false);
+        sendButton.setText("Potwierdź");
+        Button loginButton = new Button();
+        loginButton.setText("Zaloguj");
+        Button logoutButton = new Button();
+        logoutButton.setText("Wyloguj");
+
         chooseButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -85,8 +95,15 @@ public class BlowFishApp extends Application {
             }
         });
 
-        Button sendButton = new Button();
-        sendButton.setText("Prośba o plik");
+        askForFileButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                sendButton.setVisible(true);
+                confirmPswdField.setVisible(true);
+                confirmPswdText.setVisible(true);
+            }
+        });
+
         sendButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -97,58 +114,52 @@ public class BlowFishApp extends Application {
 
                     Task<Void> task = new Client(serverAddress, port,
                             encryptionChoiceBox.getValue().getBytes(), inputFileNameTextField.getText().getBytes(),
-                            outputFileNameTextField.getText(), pswdField.getText(), progressBar);
+                            outputFileNameTextField.getText(), confirmPswdField.getText(), keysGenerator, progressBar);
                     executor.submit(task);
-                    //progressBar.setProgress(1);
+                    sendButton.setVisible(false);
+                    confirmPswdField.setVisible(false);
+                    confirmPswdField.setText(null);
+                    confirmPswdText.setVisible(false);
                 } catch (Exception ex) {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
-        
-        
-        Button loginButton = new Button();
-        Button logoutButton = new Button();
-        logoutButton.setText("Wyloguj");
+
         logoutButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                    encryptionTypeText.setVisible(false);
-                    encryptionChoiceBox.setVisible(false);
-                    chooseButton.setVisible(false);
-                    inputFileNameText.setVisible(false);
-                    inputFileNameTextField.setVisible(false);
-                    outputFileNameText.setVisible(false);
-                    outputFileNameTextField.setVisible(false);
-                    pswdText.setVisible(false);
-                    pswdField.setVisible(false);
-                    sendButton.setVisible(false);
-                    progressBar.setVisible(false);
-                    filesListText.setVisible(false);
-                    logoutButton.setVisible(false);
-                    login.setVisible(true);
-                    password.setVisible(true);
-                    loginTextField.setVisible(true);
-                    passwordTextField.setVisible(true);
-                    loginButton.setVisible(true);
-                    error.setVisible(true);
+                encryptionTypeText.setVisible(false);
+                encryptionChoiceBox.setVisible(false);
+                chooseButton.setVisible(false);
+                inputFileNameText.setVisible(false);
+                inputFileNameTextField.setVisible(false);
+                outputFileNameText.setVisible(false);
+                outputFileNameTextField.setVisible(false);
+                askForFileButton.setVisible(false);
+                progressBar.setVisible(false);
+                filesListText.setVisible(false);
+                logoutButton.setVisible(false);
+                loginText.setVisible(true);
+                pswdText.setVisible(true);
+                loginTextField.setVisible(true);
+                LoginPswdTextField.setVisible(true);
+                loginButton.setVisible(true);
+                errorText.setVisible(true);
             }
         });
 
-
-        loginButton.setText("Zaloguj");
         loginButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
 
-                String pass = passwordTextField.getText();
+                String pass = LoginPswdTextField.getText();
                 String user = loginTextField.getText();
                 String result = "failed";
-                int number = 0;
 
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                    Task<String> taskLogin = new Login(serverAddress, port, user, pass);
-                    executor.submit(taskLogin);
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Task<String> taskLogin = new Login(serverAddress, port, user, pass);
+                executor.submit(taskLogin);
                 try {
                     result = taskLogin.get();
                 } catch (InterruptedException ex) {
@@ -157,10 +168,12 @@ public class BlowFishApp extends Application {
                     Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
                 }
 
-                if (result.contentEquals("success")) {               
-                    passwordTextField.setText(null);
+                if (result.contentEquals("success")) {
+                    keysGenerator = new KeysGenerator(LoginPswdTextField.getText());
+
+                    LoginPswdTextField.setText(null);
                     loginTextField.setText(null);
-                    error.setText(null);
+                    errorText.setText(null);
                     encryptionTypeText.setVisible(true);
                     encryptionChoiceBox.setVisible(true);
                     chooseButton.setVisible(true);
@@ -168,22 +181,19 @@ public class BlowFishApp extends Application {
                     inputFileNameTextField.setVisible(true);
                     outputFileNameText.setVisible(true);
                     outputFileNameTextField.setVisible(true);
-                    pswdText.setVisible(true);
-                    pswdField.setVisible(true);
-                    sendButton.setVisible(true);
+                    askForFileButton.setVisible(true);
                     progressBar.setVisible(true);
                     filesListText.setVisible(true);
                     logoutButton.setVisible(true);
-                    login.setVisible(false);
-                    password.setVisible(false);
+                    loginText.setVisible(false);
+                    pswdText.setVisible(false);
                     loginTextField.setVisible(false);
-                    passwordTextField.setVisible(false);
+                    LoginPswdTextField.setVisible(false);
                     loginButton.setVisible(false);
-                    error.setVisible(false);
+                    errorText.setVisible(false);
                 }
-                if(result.contentEquals("failed"))
-                {
-                    error.setText("Złe hasło lub login. Spróbuj jeszcze raz.");
+                if (result.contentEquals("failed")) {
+                    errorText.setText("Złe hasło lub login. Spróbuj jeszcze raz.");
                 }
             }
         });
@@ -197,9 +207,10 @@ public class BlowFishApp extends Application {
         inputFileNameTextField.setVisible(false);
         outputFileNameText.setVisible(false);
         outputFileNameTextField.setVisible(false);
-        pswdText.setVisible(false);
-        pswdField.setVisible(false);
+        askForFileButton.setVisible(false);
         sendButton.setVisible(false);
+        confirmPswdText.setVisible(false);
+        confirmPswdField.setVisible(false);
         progressBar.setVisible(false);
         filesListText.setVisible(false);
         logoutButton.setVisible(false);
@@ -207,11 +218,11 @@ public class BlowFishApp extends Application {
         gridPane.setHgap(10);
         gridPane.setVgap(10);
         gridPane.setPadding(new Insets(10, 10, 10, 10));
-        gridPane.add(login, 0, 1);
+        gridPane.add(loginText, 0, 1);
         gridPane.add(loginTextField, 1, 1);
-        gridPane.add(password, 0, 2);
-        gridPane.add(passwordTextField, 1, 2);
-        gridPane.add(error, 0, 3);
+        gridPane.add(pswdText, 0, 2);
+        gridPane.add(LoginPswdTextField, 1, 2);
+        gridPane.add(errorText, 0, 3);
         gridPane.add(loginButton, 0, 4);
         gridPane.add(logoutButton, 0, 1);
         gridPane.add(encryptionTypeText, 0, 2);
@@ -221,13 +232,14 @@ public class BlowFishApp extends Application {
         gridPane.add(inputFileNameTextField, 1, 4);
         gridPane.add(outputFileNameText, 0, 5);
         gridPane.add(outputFileNameTextField, 1, 5);
-        gridPane.add(pswdText, 0, 6);
-        gridPane.add(pswdField, 1, 6);
-        gridPane.add(sendButton, 0, 7);
-        gridPane.add(progressBar, 0, 8);
-        gridPane.add(filesListText, 0, 9);
+        gridPane.add(askForFileButton, 0, 7);
+        gridPane.add(confirmPswdText, 1, 7);
+        gridPane.add(confirmPswdField, 1, 8);
+        gridPane.add(sendButton, 2, 8);
+        gridPane.add(progressBar, 0, 9);
+        gridPane.add(filesListText, 0, 10);
 
-        Scene scene = new Scene(gridPane, 400, 350);
+        Scene scene = new Scene(gridPane, 500, 400);
 
         primaryStage.setOnCloseRequest(event -> {
             System.out.println("Closing App");

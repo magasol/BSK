@@ -6,6 +6,7 @@
 package blowfishapp.decryptionModes;
 
 import blowfishapp.keys.KeysGenerator;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,6 +45,9 @@ public class Decryption {
 
     public void writeFile(String path,String outputFileName, byte[] text) throws FileNotFoundException {
         try {
+            if (!new File(path).exists()) {
+                new File(path).mkdir();
+            }
             FileOutputStream outputStream
                     = new FileOutputStream(path + "\\" + outputFileName);
             outputStream.write(text);
