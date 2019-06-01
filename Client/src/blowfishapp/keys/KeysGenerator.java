@@ -92,7 +92,7 @@ public final class KeysGenerator {
 
     byte[] createPswdShortcut(String pswd) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            MessageDigest digest = MessageDigest.getInstance("MD5");
             byte[] pswdShortcut = digest.digest(pswd.getBytes(StandardCharsets.UTF_8));
             //System.out.println("Skrót hasła: " + new String(pswdShortcut));
             return pswdShortcut;
