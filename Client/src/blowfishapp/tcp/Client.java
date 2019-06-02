@@ -48,6 +48,7 @@ public class Client extends Task<Void> {
     private Decryption decryption;
     private KeysGenerator keysGenerator;
     private String pswd;
+    private String receiverLogin;
     private byte[] mode;
     private byte[] fileName;
     private String outputFileName;
@@ -55,11 +56,12 @@ public class Client extends Task<Void> {
     private ProgressBar progressBar;
 
     public Client(InetAddress serverAddress, int serverPort,
-            byte[] mode, byte[] inputFileName, String outputFileName, String pswd, KeysGenerator keysGenerator,
+            byte[] mode, byte[] inputFileName, String outputFileName, String receiverLogin, String pswd, KeysGenerator keysGenerator,
             ProgressBar progressBar) {
         this.PORT = serverPort;
         this.serverAddress = serverAddress;
         this.pswd = pswd;
+        this.receiverLogin = receiverLogin;
         this.mode = mode;
         this.fileName = inputFileName;
         this.outputFileName = outputFileName;
@@ -98,11 +100,11 @@ public class Client extends Task<Void> {
 
             progressBar.setProgress(0.3);
 
-            byte[] keySecretBytes = this.keysGenerator.readPublicKey();
-            this.out.writeInt(keySecretBytes.length);
-            this.out.write(keySecretBytes, 0, keySecretBytes.length);
+            byte[] receiverLoginBytes = this.receiverLogin.getBytes();
+            this.out.writeInt(receiverLoginBytes.length);
+            this.out.write(receiverLoginBytes, 0, receiverLoginBytes.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała klucz publiczny");
+            System.out.println("Aplikacja wysłała login odbiorcy");
 
             progressBar.setProgress(0.4);
 
