@@ -99,7 +99,7 @@ public class Server {
             if (len > 0) {
                 in.readFully(pathF);
             }
-            System.out.println("Serwer odebrał ścieżke do pliku: " + new String(pathF));
+            //System.out.println("Serwer odebrał ścieżke do pliku: " + new String(pathF));
             String tmp = path + "\\" + new String(pathF);
             this.filePath = tmp.getBytes();
 
@@ -108,7 +108,7 @@ public class Server {
             if (len > 0) {
                 in.readFully(type);
             }
-            System.out.println("Serwer odebrał tryb kodowania: " + new String(type));
+            //System.out.println("Serwer odebrał tryb kodowania: " + new String(type));
             this.type = type;
 
             len = in.readInt();
@@ -124,7 +124,7 @@ public class Server {
                 }
             }
             //System.out.println("Serwer odebrał: " + new String(publicKey));
-            System.out.println("Serwer odebrał: klucz publiczny");
+            //System.out.println("Serwer odebrał: klucz publiczny");
 
             send(port);
         } catch (IOException ex) {
@@ -156,19 +156,19 @@ public class Server {
             this.out.writeInt(ivBytes.length);
             this.out.write(ivBytes, 0, ivBytes.length);
             this.out.flush();
-            System.out.println("serwer wysłał wektor");
+            //System.out.println("serwer wysłał wektor");
 
             byte[] keySecretBytes = this.keysGenerator.getKeySecret().getEncoded();
             this.out.writeInt(keySecretBytes.length);
             this.out.write(keySecretBytes, 0, keySecretBytes.length);
             this.out.flush();
-            System.out.println("serwer wysłał zaszyfrowany klucz sesyjny");
+            //System.out.println("serwer wysłał zaszyfrowany klucz sesyjny");
 
             this.out.writeInt(encryption.encryptedText.length);
             this.out.write(encryption.encryptedText, 0, encryption.encryptedText.length);
             this.out.flush();
             //System.out.println("serwer wysłał " + new String(encryptedText));
-            System.out.println("serwer wysłał plik");
+            //System.out.println("serwer wysłał plik");
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -178,24 +178,24 @@ public class Server {
         if (file != null) {
             switch (value) {
                 case "CBC":
-                    System.out.println("tryb szyfrowania cbc");
+                    //System.out.println("tryb szyfrowania cbc");
                     encryption = new EncryptionCBC(file.getPath(), this.keysGenerator);
                     break;
                 case "CFB":
                     encryption = new EncryptionCFB(file.getPath(), this.keysGenerator);
-                    System.out.println("tryb szyfrowania cfb");
+                    //System.out.println("tryb szyfrowania cfb");
                     break;
                 case "ECB":
                     encryption = new EncryptionECB(file.getPath(), this.keysGenerator);
-                    System.out.println("tryb szyfrowania ecb");
+                    //System.out.println("tryb szyfrowania ecb");
                     break;
                 case "OFB":
                     encryption = new EncryptionOFB(file.getPath(), this.keysGenerator);
-                    System.out.println("tryb szyfrowania ofb");
+                    //System.out.println("tryb szyfrowania ofb");
                     break;
                 default:
                     encryption = new Encryption(file.getPath(), this.keysGenerator);
-                    System.out.println("brak trybu szyfrowania");
+                    //System.out.println("brak trybu szyfrowania");
             }
 
             if (encryption != null) {
@@ -206,7 +206,7 @@ public class Server {
 
     private void manageFilesListRequest(int port) {
         try {
-            System.out.println("Serwer odebrał prosbe o wyswietlenie listy plikow");
+            //System.out.println("Serwer odebrał prosbe o wyswietlenie listy plikow");
             sendFilesList();
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
@@ -221,12 +221,12 @@ public class Server {
         this.out.write(bList, 0, bList.length);
         this.out.flush();
 
-        System.out.println("serwer wysłał liste plikow");
+        //System.out.println("serwer wysłał liste plikow");
     }
 
     private void manageLoginRequest() {
         try {
-            System.out.println("Serwer odebrał prosbe o sprawdzenie wyniku logowania");
+            //System.out.println("Serwer odebrał prosbe o sprawdzenie wyniku logowania");
 
             int len = in.readInt();
             byte[] login = new byte[len];
@@ -282,7 +282,7 @@ public class Server {
             this.out.write(resultBytes, 0, resultBytes.length);
             this.out.flush();
 
-            System.out.println("serwer wysłał rezultat logowania");
+            //System.out.println("serwer wysłał rezultat logowania");
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -303,7 +303,7 @@ public class Server {
             return list;
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            //System.out.println(e.getMessage());
         }
         return null;
     }
@@ -352,7 +352,7 @@ public class Server {
             this.out.write(stopBytes, 0, stopBytes.length);
             this.out.flush();
 
-            System.out.println("serwer wysłał rezultat logowania");
+            //System.out.println("serwer wysłał rezultat logowania");
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -369,7 +369,7 @@ public class Server {
                 }
 
                 serverSocket.close();
-                System.out.println("Serwer został zamknięty.");
+                //System.out.println("Serwer został zamknięty.");
             }
         } catch (IOException ex) {
             Logger.getLogger(Server.class

@@ -49,17 +49,17 @@ public class KeyBinding extends Task<ObservableList<String>> {
         this.out.writeInt(text.length);
         this.out.write(text, 0, text.length);
         this.out.flush();
-        System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
+        //System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
 
         this.out.writeInt(this.login.length);
         this.out.write(this.login, 0, this.login.length);
         this.out.flush();
-        System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
+        //System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
 
         this.out.writeInt(this.publicKey.length);
         this.out.write(this.publicKey, 0, this.publicKey.length);
         this.out.flush();
-        System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
+        //System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
 
         return receiveListOfReceivers(socket);
     }
@@ -88,7 +88,7 @@ public class KeyBinding extends Task<ObservableList<String>> {
                         }
                     }
                     listOfReceivers.remove(listOfReceivers.size()-1);
-                    System.out.println("Aplikacja odebrała listę odbiorców");
+                    //System.out.println("Aplikacja odebrała listę odbiorców");
                 } catch (IOException ex) {
                     Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
                 }

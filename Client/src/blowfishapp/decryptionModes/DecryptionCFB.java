@@ -37,8 +37,10 @@ public class DecryptionCFB extends Decryption {
     @Override
     public byte[] decryptText() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
+            long start = System.nanoTime(); 
             this.cipher.init(Cipher.DECRYPT_MODE, this.keysGenerator.getKeySecret(), this.iv);
             byte[] decryptedText = this.cipher.doFinal(this.encryptedText);
+            System.out.println("czas deszyfrowania"+(System.nanoTime() - start));
             return decryptedText;
         } catch (InvalidAlgorithmParameterException ex) {
             Logger.getLogger(DecryptionECB.class.getName()).log(Level.SEVERE, null, ex);

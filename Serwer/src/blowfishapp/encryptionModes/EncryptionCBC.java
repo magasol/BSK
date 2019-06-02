@@ -41,13 +41,15 @@ public class EncryptionCBC extends Encryption {
         System.out.println("szyfruj plik " + this.fullFileName + " w trybie CBC");
         byte[] fileText = this.readFile();
         try {
+            long start = System.nanoTime();
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
+            System.out.println("czas szyfrowania"+(System.nanoTime() - start));
             this.encryptedText = cipherText;
 
             this.ivBytes = cipher.getIV();
 
-            System.out.println("KONIEC");
+            //System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);

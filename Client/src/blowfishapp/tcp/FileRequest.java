@@ -47,7 +47,7 @@ public class FileRequest extends Task<String> {
             this.out.writeInt(text.length);
             this.out.write(text, 0, text.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała prosbe o liste plikow");
+            //System.out.println("Aplikacja wysłała prosbe o liste plikow");
 
             receiveFiles(socket);
         } catch (IOException ex) {
@@ -63,7 +63,7 @@ public class FileRequest extends Task<String> {
         out.flush();
 
         if (!socket.isConnected()) {
-            System.out.println("Aplikacja nie połączyła się z serwerem");
+            //System.out.println("Aplikacja nie połączyła się z serwerem");
         }
         while (flag) {
             try {
@@ -73,7 +73,7 @@ public class FileRequest extends Task<String> {
                 files = new byte[len];
                 if (len > 0) {
                     in.readFully(files);
-                    System.out.println("Aplikacja odebrała liste plikow");
+                    //System.out.println("Aplikacja odebrała liste plikow");
                     flag = false;
                 }
 

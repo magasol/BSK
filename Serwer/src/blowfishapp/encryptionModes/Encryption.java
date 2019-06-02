@@ -54,11 +54,13 @@ public class Encryption {
         System.out.println("szyfruj plik " + this.fullFileName);
         byte[] fileText = this.readFile();
         try {
+            long start = System.nanoTime(); 
             cipher.init(Cipher.ENCRYPT_MODE, keySecret);
             byte[] cipherText = cipher.doFinal(fileText);
+            System.out.println("czas szyfrowania"+(System.nanoTime() - start));
             this.encryptedText = cipherText;
 
-            System.out.println("KONIEC");
+            //System.out.println("KONIEC");
 
         } catch (InvalidKeyException ex) {
             Logger.getLogger(EncryptionCBC.class.getName()).log(Level.SEVERE, null, ex);

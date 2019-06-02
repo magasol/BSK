@@ -47,25 +47,25 @@ public class Login extends Task<String> {
 
         try {
             if (!socket.isConnected()) {
-                System.out.println("Aplikacja nie połączyła się z serwerem");
+                //System.out.println("Aplikacja nie połączyła się z serwerem");
             }
 
             this.out.writeInt(text.length);
             this.out.write(text, 0, text.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
+            //System.out.println("Aplikacja wysłała prosbe o sprawdzenie logowania");
 
             this.out.writeInt(LoginBytes.length);
             this.out.write(LoginBytes, 0, LoginBytes.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała login");
+            //System.out.println("Aplikacja wysłała login");
 
             byte[] passwordHashBytes = hashPassword(passwordBytes);
 
             this.out.writeInt(passwordHashBytes.length);
             this.out.write(passwordHashBytes, 0, passwordHashBytes.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała hasło");
+            //System.out.println("Aplikacja wysłała hasło");
 
             receiveResult(socket);
         } catch (IOException ex) {
@@ -102,7 +102,7 @@ public class Login extends Task<String> {
                 result = new byte[len];
                 if (len > 0) {
                     in.readFully(result);
-                    System.out.println("Aplikacja odebrała wynik logowania");
+                    //System.out.println("Aplikacja odebrała wynik logowania");
                     flag = false;
                 }
 

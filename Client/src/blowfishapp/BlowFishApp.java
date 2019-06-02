@@ -114,12 +114,13 @@ public class BlowFishApp extends Application {
                 try {
                     ExecutorService executor = Executors.newSingleThreadExecutor();
                     InetAddress serverAddress = InetAddress.getByName(address);
-
+                    
                     Task<Void> task = new Client(serverAddress, port,
                             encryptionChoiceBox.getValue().getBytes(), inputFileNameTextField.getText().getBytes(),
                             outputFileNameTextField.getText(), receiverChoiceBox.getValue(),
                             confirmPswdField.getText(), keysGenerator, progressBar);
                     executor.submit(task);
+                    
                     sendButton.setVisible(false);
                     confirmPswdField.setVisible(false);
                     confirmPswdField.setText(null);

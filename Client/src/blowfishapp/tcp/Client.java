@@ -54,7 +54,8 @@ public class Client extends Task<Void> {
     private String outputFileName;
     private Socket socket;
     private ProgressBar progressBar;
-
+    private long start = 0;
+    
     public Client(InetAddress serverAddress, int serverPort,
             byte[] mode, byte[] inputFileName, String outputFileName, String receiverLogin, String pswd, KeysGenerator keysGenerator,
             ProgressBar progressBar) {
@@ -71,6 +72,7 @@ public class Client extends Task<Void> {
 
     @Override
     protected Void call() throws Exception {
+        this.start = System.nanoTime(); 
         socket = new Socket(serverAddress, PORT);
         this.out = new ObjectOutputStream(socket.getOutputStream());
         this.out.flush();
@@ -89,14 +91,14 @@ public class Client extends Task<Void> {
             this.out.writeInt(fileName.length);
             this.out.write(fileName, 0, fileName.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała ścieżke: " + new String(fileName));
+            //System.out.println("Aplikacja wysłała ścieżke: " + new String(fileName));
 
             progressBar.setProgress(0.2);
 
             this.out.writeInt(mode.length);
             this.out.write(mode, 0, mode.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała tryb kodowania: " + new String(mode));
+            //System.out.println("Aplikacja wysłała tryb kodowania: " + new String(mode));
 
             progressBar.setProgress(0.3);
 
@@ -104,12 +106,12 @@ public class Client extends Task<Void> {
             this.out.writeInt(receiverLoginBytes.length);
             this.out.write(receiverLoginBytes, 0, receiverLoginBytes.length);
             this.out.flush();
-            System.out.println("Aplikacja wysłała login odbiorcy");
+            //System.out.println("Aplikacja wysłała login odbiorcy");
 
             progressBar.setProgress(0.4);
 
             receive(socket);
-
+            System.out.println("czas całego procesu "+(System.nanoTime() - start));
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -125,7 +127,7 @@ public class Client extends Task<Void> {
                 byte[] iv = new byte[len];
                 if (len > 0) {
                     in.readFully(iv);
-                    System.out.println("Aplikacja odebrała: iv od serwera");
+                    //System.out.println("Aplikacja odebrała: iv od serwera");
                     flag = false;
                 }
 
@@ -136,7 +138,7 @@ public class Client extends Task<Void> {
                 if (len > 0) {
                     in.readFully(encryptedSessionKeyBytes);
                     //System.out.println("Aplikacja odebrała: " + new String(encryptedSessionKeyBytes));
-                    System.out.println("Aplikacja odebrała: zaszyfrowany klucz sesyjny od serwera");
+                    //System.out.println("Aplikacja odebrała: zaszyfrowany klucz sesyjny od serwera");
                     flag = false;
                 }
 
@@ -147,7 +149,7 @@ public class Client extends Task<Void> {
                 if (len > 0) {
                     in.readFully(encryptedText);
                     //System.out.println("Aplikacja odebrała: " + new String(encryptedText));
-                    System.out.println("Aplikacja odebrała: zaszyfrowany plik od serwera");
+                    //System.out.println("Aplikacja odebrała: zaszyfrowany plik od serwera");
                     flag = false;
                 }
 
@@ -161,7 +163,7 @@ public class Client extends Task<Void> {
 
                 progressBar.setProgress(1);
 
-                System.out.println("KONIEC");
+                //System.out.println("KONIEC");
                 stop();
             } catch (IOException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -177,24 +179,24 @@ public class Client extends Task<Void> {
             try {
                 switch (value) {
                     case "CBC":
-                        System.out.println("tryb szyfrowania cbc");
+                        //System.out.println("tryb szyfrowania cbc");
                         this.decryption = new DecryptionCBC(encryptedText, this.keysGenerator);
                         break;
                     case "CFB":
                         this.decryption = new DecryptionCFB(encryptedText, this.keysGenerator);
-                        System.out.println("tryb szyfrowania cfb");
+                        //System.out.println("tryb szyfrowania cfb");
                         break;
                     case "ECB":
                         this.decryption = new DecryptionECB(encryptedText, this.keysGenerator);
-                        System.out.println("tryb szyfrowania ecb");
+                        //System.out.println("tryb szyfrowania ecb");
                         break;
                     case "OFB":
                         this.decryption = new DecryptionOFB(encryptedText, this.keysGenerator);
-                        System.out.println("tryb szyfrowania ofb");
+                        //System.out.println("tryb szyfrowania ofb");
                         break;
                     default:
                         this.decryption = new Decryption(encryptedText, this.keysGenerator);
-                        System.out.println("brak trybu szyfrowania");
+                        //System.out.println("brak trybu szyfrowania");
                 }
                 if (!"ecb".equals(new String(this.mode))) {
                     this.decryption.setIvParameterSpec(ivBytes);
@@ -206,7 +208,7 @@ public class Client extends Task<Void> {
                 byte[] decryptedText = this.decryption.decryptText();
                 String outputFileNameMatched = matchOutputFileNameExtension();
                 this.decryption.writeFile(this.outputPathDecrypted, outputFileNameMatched, decryptedText);
-                System.out.println("Plik odszyfrowany");
+                //System.out.println("Plik odszyfrowany");
             } catch (NoSuchAlgorithmException ex) {
                 Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
             } catch (NoSuchPaddingException ex) {
@@ -263,6 +265,6 @@ public class Client extends Task<Void> {
         this.socket.close();
         this.in.close();
         this.out.close();
-        System.out.println("Klient został zamknięty.");
+        //System.out.println("Klient został zamknięty.");
     }
 }
