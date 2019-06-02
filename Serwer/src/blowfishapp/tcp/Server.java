@@ -41,8 +41,10 @@ public class Server {
     private ObjectInputStream in;
     //String path = "C:\\Users\\Aleksandra\\Desktop";
     String path = "E:\\semestr 6\\bsk\\test";
-    List<String> users = new ArrayList<String>();
-    List<String> passwords = new ArrayList<String>();
+    //private String path = "/home/student/Documents/test";
+    private List<String> users = new ArrayList<String>();
+    private List<String> passwords = new ArrayList<String>();
+    private List<List<Byte>> publicKeys = new ArrayList<List<Byte>>();
 
     public Server(int port, InetAddress serverAddress) {
         try {
@@ -80,6 +82,8 @@ public class Server {
                     manageFilesListRequest(port);
                 } else if ("login".equals(new String(requestFor))) {
                     manageLoginRequest();
+                } else if ("key binding".equals(new String(requestFor))) {
+                    manageKeyBinding();
                 }
             }
         } catch (IOException ex) {
@@ -109,10 +113,15 @@ public class Server {
 
             len = in.readInt();
 
-            byte[] publicKey = new byte[len];
+            byte[] receiverLogin = new byte[len];
             if (len > 0) {
-                in.readFully(publicKey);
-                this.publicKey = publicKey;
+                in.readFully(receiverLogin);
+                for (int i = 0; i < users.size(); i++) {
+                    if (this.users.get(i).equals(new String(receiverLogin))) {
+                        this.publicKey = convertBigBytesToSmallBytes(this.publicKeys.get(i));
+                        break;
+                    }
+                }
             }
             //System.out.println("Serwer odebrał: " + new String(publicKey));
             System.out.println("Serwer odebrał: klucz publiczny");
@@ -121,6 +130,15 @@ public class Server {
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private byte[] convertBigBytesToSmallBytes(List<Byte> bigBytes) {
+        Byte[] textBigBytes = bigBytes.toArray(new Byte[bigBytes.size()]);
+        byte[] textBytes = new byte[textBigBytes.length];
+        for (int i = 0; i < textBigBytes.length; i++) {
+            textBytes[i] = textBigBytes[i];
+        }
+        return textBytes;
     }
 
     public void send(int port) {
@@ -256,21 +274,20 @@ public class Server {
         this.passwords.add(password);
         sendLoginResult("success");
     }
-    
-    private void sendLoginResult(String result)
-    {
+
+    private void sendLoginResult(String result) {
         try {
             byte[] resultBytes = result.getBytes();
             this.out.writeInt(resultBytes.length);
             this.out.write(resultBytes, 0, resultBytes.length);
             this.out.flush();
-            
+
             System.out.println("serwer wysłał rezultat logowania");
         } catch (IOException ex) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public String chooseFile(String path) {
         String list = "";
         try {
@@ -289,6 +306,56 @@ public class Server {
             System.out.println(e.getMessage());
         }
         return null;
+    }
+
+    private void manageKeyBinding() {
+        try {
+            int len = in.readInt();
+            byte[] login = new byte[len];
+            if (len > 0) {
+                in.readFully(login);
+            }
+
+            len = in.readInt();
+            byte[] key = new byte[len];
+            if (len > 0) {
+                in.readFully(key);
+            }
+
+            this.publicKeys.add(convertSmallBytesToBigBytes(key));
+
+            sendListOfReceivers();
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private List<Byte> convertSmallBytesToBigBytes(byte[] smallBytes) {
+        List<Byte> BigBytes = new ArrayList<Byte>();
+        for (int i = 0; i < smallBytes.length; i++) {
+            BigBytes.add(smallBytes[i]);
+        }
+        return BigBytes;
+    }
+
+    private void sendListOfReceivers() {
+        try {
+            for (String user : this.users) {
+                byte[] userBytes = user.getBytes();
+                this.out.writeInt(userBytes.length);
+                this.out.write(userBytes, 0, userBytes.length);
+                this.out.flush();
+            }
+
+            byte[] stopBytes = "stop".getBytes();
+            this.out.writeInt(stopBytes.length);
+            this.out.write(stopBytes, 0, stopBytes.length);
+            this.out.flush();
+
+            System.out.println("serwer wysłał rezultat logowania");
+        } catch (IOException ex) {
+            Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void stop() {

@@ -50,7 +50,7 @@ public class BlowFishApp extends Application {
         Text loginText = new Text("Podaj login: ");
         Text pswdText = new Text("Podaj hasło: ");
         TextField loginTextField = new TextField("Login");
-        PasswordField LoginPswdTextField = new PasswordField();
+        PasswordField loginPswdTextField = new PasswordField();
         TextField outputFileNameTextField = new TextField("Nazwa");
         Text inputFileNameText = new Text("Plik wejściowy");
         TextField inputFileNameTextField = new TextField("Nazwa");
@@ -60,9 +60,12 @@ public class BlowFishApp extends Application {
         progressBar.setPrefWidth(250.0d);
         progressBar.setProgress(0);
 
-        ObservableList<String> names = FXCollections.observableArrayList(
+        ObservableList<String> modeNames = FXCollections.observableArrayList(
                 "ECB", "CBC", "CFB", "OFB", "BRAK");
-        ChoiceBox<String> encryptionChoiceBox = new ChoiceBox<>(names);
+        ChoiceBox<String> encryptionChoiceBox = new ChoiceBox<>(modeNames);
+        
+        ObservableList<String> userNames = FXCollections.observableArrayList();
+        ChoiceBox<String> receiverChoiceBox = new ChoiceBox<>(userNames);
 
         InetAddress serverAddress = InetAddress.getByName(address);
 
@@ -114,7 +117,8 @@ public class BlowFishApp extends Application {
 
                     Task<Void> task = new Client(serverAddress, port,
                             encryptionChoiceBox.getValue().getBytes(), inputFileNameTextField.getText().getBytes(),
-                            outputFileNameTextField.getText(), confirmPswdField.getText(), keysGenerator, progressBar);
+                            outputFileNameTextField.getText(), receiverChoiceBox.getValue(),
+                            confirmPswdField.getText(), keysGenerator, progressBar);
                     executor.submit(task);
                     sendButton.setVisible(false);
                     confirmPswdField.setVisible(false);
@@ -131,6 +135,7 @@ public class BlowFishApp extends Application {
             public void handle(ActionEvent event) {
                 encryptionTypeText.setVisible(false);
                 encryptionChoiceBox.setVisible(false);
+                receiverChoiceBox.setVisible(false);
                 chooseButton.setVisible(false);
                 inputFileNameText.setVisible(false);
                 inputFileNameTextField.setVisible(false);
@@ -143,7 +148,7 @@ public class BlowFishApp extends Application {
                 loginText.setVisible(true);
                 pswdText.setVisible(true);
                 loginTextField.setVisible(true);
-                LoginPswdTextField.setVisible(true);
+                loginPswdTextField.setVisible(true);
                 loginButton.setVisible(true);
                 errorText.setVisible(true);
             }
@@ -153,7 +158,7 @@ public class BlowFishApp extends Application {
             @Override
             public void handle(ActionEvent event) {
 
-                String pass = LoginPswdTextField.getText();
+                String pass = loginPswdTextField.getText();
                 String user = loginTextField.getText();
                 String result = "failed";
 
@@ -169,11 +174,24 @@ public class BlowFishApp extends Application {
                 }
 
                 if (result.contentEquals("success")) {
-                    keysGenerator = new KeysGenerator(LoginPswdTextField.getText());
-
-                    LoginPswdTextField.setText(null);
+                    keysGenerator = new KeysGenerator(loginPswdTextField.getText(),loginTextField.getText());
+                    //sending public key to server
+                    try {
+                    Task<ObservableList<String>> task = new KeyBinding(
+                            serverAddress, port,loginTextField.getText().getBytes(), keysGenerator.readPublicKey());
+                    executor.submit(task);
+                    
+                        receiverChoiceBox.setItems(task.get());
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ExecutionException ex) {
+                        Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                    loginPswdTextField.setText(null);
                     loginTextField.setText(null);
                     errorText.setText(null);
+                    receiverChoiceBox.setVisible(true);
                     encryptionTypeText.setVisible(true);
                     encryptionChoiceBox.setVisible(true);
                     chooseButton.setVisible(true);
@@ -188,7 +206,7 @@ public class BlowFishApp extends Application {
                     loginText.setVisible(false);
                     pswdText.setVisible(false);
                     loginTextField.setVisible(false);
-                    LoginPswdTextField.setVisible(false);
+                    loginPswdTextField.setVisible(false);
                     loginButton.setVisible(false);
                     errorText.setVisible(false);
                 }
@@ -200,6 +218,7 @@ public class BlowFishApp extends Application {
 
         GridPane gridPane = new GridPane();
 
+        receiverChoiceBox.setVisible(false);
         encryptionTypeText.setVisible(false);
         encryptionChoiceBox.setVisible(false);
         chooseButton.setVisible(false);
@@ -221,12 +240,13 @@ public class BlowFishApp extends Application {
         gridPane.add(loginText, 0, 1);
         gridPane.add(loginTextField, 1, 1);
         gridPane.add(pswdText, 0, 2);
-        gridPane.add(LoginPswdTextField, 1, 2);
+        gridPane.add(loginPswdTextField, 1, 2);
         gridPane.add(errorText, 0, 3);
         gridPane.add(loginButton, 0, 4);
         gridPane.add(logoutButton, 0, 1);
         gridPane.add(encryptionTypeText, 0, 2);
         gridPane.add(encryptionChoiceBox, 1, 2);
+        gridPane.add(receiverChoiceBox,2,2);
         gridPane.add(chooseButton, 0, 3);
         gridPane.add(inputFileNameText, 0, 4);
         gridPane.add(inputFileNameTextField, 1, 4);
