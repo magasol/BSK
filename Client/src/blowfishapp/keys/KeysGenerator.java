@@ -44,15 +44,15 @@ public final class KeysGenerator {
 
     public byte[] encryptedSessionKeyBytes;
     private SecretKey keySecret;
-    final private String privateFolderName = ".\\private";
-    final private String publicFolderName = ".\\public";
+    private String privateFolderName = ".\\private";
+    private String publicFolderName = ".\\public";
     final private String fileName = "key";
 
-    public KeysGenerator(String pswd) {
-        createRSAKeys(pswd);
+    public KeysGenerator(String pswd, String user) {
+        createRSAKeys(pswd,user);
     }
 
-    public void createRSAKeys(String pswd) {
+    public void createRSAKeys(String pswd, String user) {
         try {
             String algorithm = "RSA"; // or RSA, DH, etc.
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance(algorithm);
@@ -67,6 +67,9 @@ public final class KeysGenerator {
 
             //System.out.println("\n\n\nPrivte key:\n" + new String(privateKeyBytes) + "\n\n\nPublic key:\n");
             //System.out.println(new String(publicKey.getEncoded()));
+            
+            this.publicFolderName=this.publicFolderName+"\\"+user;
+            this.privateFolderName=this.privateFolderName+"\\"+user;
             if (!new File(this.privateFolderName).exists()) {
                 new File(this.privateFolderName).mkdir();
             }
@@ -76,9 +79,9 @@ public final class KeysGenerator {
 
             byte[] ivLength = ByteBuffer.allocate(4).putInt(encryption.getIvBytes().length).array();
 
-            writeFile("private", joinByteArrays(ivLength, encryption.getIvBytes(),
+            writeFile(this.privateFolderName, joinByteArrays(ivLength, encryption.getIvBytes(),
                     privateKeyBytes));
-            writeFile("public", publicKey.getEncoded());
+            writeFile(this.publicFolderName, publicKey.getEncoded());
         } catch (NoSuchAlgorithmException ex) {
             Logger.getLogger(BlowFishApp.class.getName()).log(Level.SEVERE, null, ex);
         } catch (FileNotFoundException ex) {

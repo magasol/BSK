@@ -169,7 +169,7 @@ public class BlowFishApp extends Application {
                 }
 
                 if (result.contentEquals("success")) {
-                    keysGenerator = new KeysGenerator(LoginPswdTextField.getText());
+                    keysGenerator = new KeysGenerator(LoginPswdTextField.getText(),LoginPswdTextField.getText());
 
                     LoginPswdTextField.setText(null);
                     loginTextField.setText(null);

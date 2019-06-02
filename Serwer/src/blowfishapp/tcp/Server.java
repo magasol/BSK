@@ -40,7 +40,8 @@ public class Server {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     //String path = "C:\\Users\\Aleksandra\\Desktop";
-    String path = "E:\\semestr 6\\bsk\\test";
+    //String path = "E:\\semestr 6\\bsk\\test";
+    String path = "/home/student/Documents/test";
     List<String> users = new ArrayList<String>();
     List<String> passwords = new ArrayList<String>();
 
